@@ -12,3 +12,10 @@ From ((Select SID, SC.Score From SC Where CID = '01') AS t1
 Inner Join(Select SID, SC.Score From SC Where CID = '02') AS t2 
 On t1.SID = t2.SID), Student
 Where t1.SID = Student.SID
+
+/*Q3: 查询存在"01"课程但可能不存在"02"课程的情况（不存在时显示为 null）*/
+Select Student.*, t1.Score AS Score01, t2.Score AS Score02
+From ((Select SID, SC.Score From SC Where CID = '01') AS t1 
+Left Join(Select SID, SC.Score From SC Where CID = '02') AS t2 
+On t1.SID = t2.SID), Student
+Where t1.SID = Student.SID
