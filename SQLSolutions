@@ -7,6 +7,7 @@ On t1.SID = t2.SID And t1.Score > t2.Score), Student
 Where t1.SID = Student.SID
 
 /*Q2: 查询同时存在"01"课程和"02"课程的情况*/
+
 Select Student.*, t1.Score AS Score01, t2.Score AS Score02
 From ((Select SID, SC.Score From SC Where CID = '01') AS t1 
 Inner Join(Select SID, SC.Score From SC Where CID = '02') AS t2 
@@ -14,6 +15,7 @@ On t1.SID = t2.SID), Student
 Where t1.SID = Student.SID
 
 /*Q3: 查询存在"01"课程但可能不存在"02"课程的情况（不存在时显示为 null）*/
+
 Select Student.*, t1.Score AS Score01, t2.Score AS Score02
 From ((Select SID, SC.Score From SC Where CID = '01') AS t1 
 Left Join(Select SID, SC.Score From SC Where CID = '02') AS t2 
@@ -21,8 +23,19 @@ On t1.SID = t2.SID), Student
 Where t1.SID = Student.SID
 
 /*Q4: 查询不存在" 01 "课程但存在" 02 "课程的情况*/
+
 Select Student.*, SC.Score As Score
 From SC, Student
 Where SC.SID not in (Select SID From SC Where SC.CID='01')
 And SC.CID='02'
 And SC.SID = Student.SID
+
+/*Q5: 查询平均成绩大于等于 60 分的同学的学生编号，学生姓名和平均成绩*/
+
+Select Student.*, AvgS
+From Student Inner Join(
+Select SID ,Round(Avg(Score), 1) As AvgS
+From SC 
+Group by SID
+Having Avg(Score) >= 60) As t1
+On Student.SID = t1.SID
