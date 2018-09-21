@@ -23,6 +23,6 @@ Where t1.SID = Student.SID
 /*Q4: 查询不存在" 01 "课程但存在" 02 "课程的情况*/
 Select Student.*, SC.Score As Score
 From SC, Student
-Where SC.SId not in (Select SID From SC Where SC.CID='01')
+Where SC.SID not in (Select SID From SC Where SC.CID='01')
 And SC.CID='02'
 And SC.SID = Student.SID
