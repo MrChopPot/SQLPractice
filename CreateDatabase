@@ -21,12 +21,14 @@ Insert into Course Values
 ('02' , '数学' , '01'),
 ('03' , '英语' , '03');
 
+/*Teacher Table*/
 Create Table Teacher(TID varchar(10),TName varchar(10))
 Insert into Teacher Values
 ('01' , '张三'),
 ('02' , '李四'),
 ('03' , '王五');
 
+/*Score & Course Table*/
 Create Table SC(SId varchar(10),CId varchar(10),score decimal(18,1))
 Insert into SC Values
 ('01' , '01' , 80),
