@@ -47,12 +47,37 @@ FROM (Student INNER JOIN SC ON Student.SID = SC.SID) AS t1
 WHERE SC.Score is not NULL
 
 /*Q7: 查询所有同学的学生编号、学生姓名、选课总数、所有课程的总成绩(没成绩的显示为Null)*/
+
 SELECT SID, SName, ClassSum, ScoreSum
 FROM Student, (SELECT SID, Count(*) AS ClassSum, Sum(Score) AS ScoreSum 
 FROM SC GROUP BY SID) AS t1
 WHERE Student.SID = t1.SID
 
 /*Q8: 查有成绩的学生信息*/
+
 SELECT *
 FROM Student
 WHERE Exists(SELECT * FROM SC WHERE Student.SID = SC.SID)
+
+/*Q9: 查询「李」姓老师的数量*/
+
+SELECT Count(*)
+FROM Teacher
+WHERE TName Like '李%'
+
+/*Q10: 查询学过「张三」老师授课的同学的信息*/
+
+/*Solution1*/
+SELECT *
+FROM Student WHERE SID in 
+(SELECT SID FROM SC WHERE CID in 
+(SELECT CID FROM Course WHERE TID in 
+(SELECT TID FROM Teacher WHERE Teacher.TName = '张三')))
+
+/*Solution2*/
+SELECT Student.*
+FROM Student, Course, Teacher, SC
+WHERE Teacher.TName = '张三'
+AND Teacher.TID = Course.TID
+AND Course.CID = SC.CID
+AND SC.SID = Student.SID
