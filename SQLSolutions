@@ -19,3 +19,10 @@ From ((Select SID, SC.Score From SC Where CID = '01') AS t1
 Left Join(Select SID, SC.Score From SC Where CID = '02') AS t2 
 On t1.SID = t2.SID), Student
 Where t1.SID = Student.SID
+
+/*Q4: 查询不存在" 01 "课程但存在" 02 "课程的情况*/
+Select Student.*, SC.Score As Score
+From SC, Student
+Where SC.SId not in (Select SID From SC Where SC.CID='01')
+And SC.CID='02'
+And SC.SID = Student.SID
