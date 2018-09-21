@@ -39,3 +39,9 @@ From SC
 Group by SID
 Having Avg(Score) >= 60) As t1
 On Student.SID = t1.SID
+
+/*Q6: 查询在 SC 表存在成绩的学生信息*/
+
+SELECT Distinct Student.*
+FROM (Student INNER JOIN SC ON Student.SID = SC.SID) AS t1
+WHERE SC.Score is not NULL
