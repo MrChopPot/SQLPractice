@@ -84,9 +84,34 @@ AND SC.SID = Student.SID
 
 /*Q11: 查询没有学全所有课程的同学的信息*/
 
+/*Solution1*/
 SELECT *
 FROM Student
 WHERE SID not in (SELECT SID FROM SC
 GROUP BY SID
 Having Count(CID) is not 
 (SELECT DISTINCT Count(*) FROM Course))
+
+/*Solution2*/
+SELECT DISTINCT Student.*
+FROM (SELECT Student.SID, Course.CID
+FROM Student, Course) AS t1 LEFT JOIN 
+(SELECT SC.SID, SC.CID FROM SC) AS t2 
+ON t1.SID = t2.SID AND t1.CID = t2.CID, Student
+WHERE t2.SID is NULL
+AND t1.SID = Student.SID
+
+/*Q12: 查询至少有一门课与学号为"01"的同学所学相同的同学的信息*/
+/*Solution1*/
+SELECT *
+FROM Student
+WHERE SID in (SELECT SID FROM SC
+WHERE SC.CID in (SELECT CID FROM SC
+WHERE SID = '01'))
+
+/*Solution2*/
+SELECT Student.*
+FROM Student, SC
+WHERE SC.CID in (SELECT CID FROM SC
+WHERE SID = '01'))
+AND Student.SID = SC.SID
