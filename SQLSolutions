@@ -51,3 +51,8 @@ SELECT SID, SName, ClassSum, ScoreSum
 FROM Student, (SELECT SID, Count(*) AS ClassSum, Sum(Score) AS ScoreSum 
 FROM SC GROUP BY SID) AS t1
 WHERE Student.SID = t1.SID
+
+/*Q8: 查有成绩的学生信息*/
+SELECT *
+FROM Student
+WHERE Exists(SELECT * FROM SC WHERE Student.SID = SC.SID)
