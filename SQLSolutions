@@ -130,3 +130,11 @@ FROM Course, Teacher, SC
 WHERE Teacher.TName = '张三'
 AND Course.TID = Teacher.TID
 AND SC.CID = Course.CID)
+
+/*Q15: 查询两门及以上不及格课程的同学的学号，姓名及其平均成绩*/
+SELECT Student.SID, Student.SName, Round(Avg(SC.Score),1) AS AvgS
+FROM Student, SC
+WHERE SC.SID = Student.SID
+AND SC.Score < 60
+GROUP BY SC.SID
+HAVING Count(*) >= 2
