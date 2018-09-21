@@ -81,3 +81,12 @@ WHERE Teacher.TName = '张三'
 AND Teacher.TID = Course.TID
 AND Course.CID = SC.CID
 AND SC.SID = Student.SID
+
+/*Q11: 查询没有学全所有课程的同学的信息*/
+
+SELECT *
+FROM Student
+WHERE SID not in (SELECT SID FROM SC
+GROUP BY SID
+Having Count(CID) is not 
+(SELECT DISTINCT Count(*) FROM Course))
