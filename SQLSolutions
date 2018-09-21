@@ -6,7 +6,7 @@ Inner Join(Select SID, SC.Score From SC Where CID = '02') AS t2
 On t1.SID = t2.SID And t1.Score > t2.Score), Student
 Where t1.SID = Student.SID
 
-Q2: 查询同时存在"01"课程和"02"课程的情况
+/*Q2: 查询同时存在"01"课程和"02"课程的情况*/
 Select Student.*, t1.Score AS Score01, t2.Score AS Score02
 From ((Select SID, SC.Score From SC Where CID = '01') AS t1 
 Inner Join(Select SID, SC.Score From SC Where CID = '02') AS t2 
