@@ -115,3 +115,18 @@ FROM Student, SC
 WHERE SC.CID in (SELECT CID FROM SC
 WHERE SID = '01'))
 AND Student.SID = SC.SID
+
+/*Q13: 查询和"01"号的同学学习的课程完全相同的其他同学的信息*/
+
+
+
+/*Q14: 查询没学过"张三"老师讲授的任一门课程的学生姓名*/
+
+SELECT Student.SName
+FROM Student
+WHERE Student.SID not in
+(SELECT SC.SID
+FROM Course, Teacher, SC
+WHERE Teacher.TName = '张三'
+AND Course.TID = Teacher.TID
+AND SC.CID = Course.CID)
