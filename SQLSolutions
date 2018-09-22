@@ -149,6 +149,7 @@ AND Student.SID = SC.SID
 ORDER BY 2 DESC
 
 /*Q17: 按平均成绩从高到低显示所有学生的所有课程的成绩以及平均成绩*/
+
 SELECT SC.SID, SC.CID, SC.Score, t1.AvgS
 FROM SC LEFT JOIN (SELECT SC.SID, Avg(SC.Score) AS AvgS
 FROM SC GROUP BY SC.SID) AS t1 ON SC.SID = t1.SID 
