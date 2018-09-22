@@ -240,3 +240,38 @@ FROM Course, SC
 WHERE Course.CID = SC.CID
 AND SC.Score < 60
 GROUP BY 1
+
+/*Q37: 查询课程编号为“01”且课程成绩在80分以上的学生的学号和姓名*/
+
+SELECT Student.SID, Student.SName
+FROM Student, SC
+WHERE Student.SID = SC.SID
+AND SC.CID = '01'
+AND SC.Score >= 80
+
+/*Q38: 求每门课程的学生人数*/
+
+SELECT Course.CID, Course.CName, Count(*) AS ClassSize
+FROM SC, Course
+WHERE Course.CID = SC.CID
+GROUP BY SC.CID
+
+/*Q39: 成绩不重复，查询选修「张三」老师所授课程的学生中，成绩最高的学生信息及其成绩*/
+
+SELECT Student.*, SC.Score
+FROM Student, Course, Teacher, SC
+WHERE Student.SID = SC.SID
+AND SC.CID = Course.CID
+AND Course.TID = Teacher.TID
+AND Teacher.TName = '张三'
+ORDER BY SC.Score DESC LIMIT 1
+
+/*Q41: 查询不同课程成绩相同的学生的学生编号、课程编号、学生成绩*/
+
+SELECT t1.*
+FROM SC t1 INNER JOIN SC t2
+ON t1.SID = t2.SID
+AND t1.CID != t2.CID
+AND t1.Score = t2.Score
+GROUP BY t1.SID, t1.CID
+
