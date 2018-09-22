@@ -193,3 +193,49 @@ SELECT *
 FROM Student
 WHERE SAge Like '1990%'
 
+/*Q31: 查询每门课程的平均成绩，降序排列；平均成绩相同时，按课程编号升序排列*/
+
+SELECT CID, Round(Avg(Score), 1) AS AvgS
+FROM SC
+GROUP BY 1
+ORDER BY 2 DESC, 1
+
+/*Q32: 查询平均成绩大于等于 85 的所有学生的学号、姓名和平均成绩*/
+
+SELECT Student.SName, Student.SID, t.AvgS
+FROM Student INNER JOIN
+(SELECT SID, Round(Avg(Score), 1) AS AvgS FROM SC
+GROUP BY 1 HAVING AvgS >= 85 ) AS t
+ON Student.SID = t.SID
+
+/*Q33: 查询课程名称为「数学」，且分数低于 60 的学生姓名和分数*/
+
+SELECT Student.SName, t.Score
+FROM Student INNER JOIN
+(SELECT SC.SID, SC.Score FROM Course, SC 
+WHERE Course.CName = '数学' AND Course.CID = SC.CID) AS t
+ON Student.SID = t.SID
+GROUP BY 1
+HAVING t.Score < 60
+
+/*Q34: 查询所有学生的课程及分数情况（存在学生没成绩，没选课的情况）*/
+
+SELECT Student.SName, SC.CID, SC.Score
+FROM Student, SC
+WHERE Student.SID = SC.SID
+
+/*Q35: 查询任何一门课程成绩在 70 分以上的姓名、课程名称和分数*/
+
+SELECT Student.SName, Course.CName, SC.Score
+FROM Student, Course, SC
+WHERE SC.Score > 70
+AND Course.CID = SC.CID
+AND Student.SID = SC.SID
+
+/*Q36: 查询不及格的课程*/
+
+SELECT DISTINCT Course.CName, Count(SC.Score) AS Num
+FROM Course, SC
+WHERE Course.CID = SC.CID
+AND SC.Score < 60
+GROUP BY 1
