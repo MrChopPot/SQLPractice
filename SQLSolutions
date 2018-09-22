@@ -166,3 +166,30 @@ SELECT Course.CName, Count(SC.Score) AS ClassSize
 FROM Course, SC
 WHERE Course.CID = SC.CID
 GROUP BY CName
+
+/*Q26: 查询出只选修两门课程的学生学号和姓名*/
+
+SELECT Student.SID, Student.SName
+FROM Student, SC
+WHERE Student.SID = SC.SID
+GROUP BY SC.SID
+HAVING Count(*) = 2
+
+/*Q27: 查询男生、女生人数*/
+
+SELECT Count(*) AS CountT, Count(Case When SSex = '男' THEN SSex END) AS CountM, 
+Count(Case When SSex = '女' THEN SSex END) AS CountF
+FROM Student
+
+/*Q28: 查询名字中含有「风」字的学生信息*/
+
+SELECT *
+FROM Student
+WHERE SName Like '%风%'
+
+/*Q30: 查询 1990 年出生的学生名单*/
+
+SELECT *
+FROM Student
+WHERE SAge Like '1990%'
+
