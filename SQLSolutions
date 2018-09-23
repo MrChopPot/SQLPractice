@@ -284,6 +284,16 @@ AND Course.TID = Teacher.TID
 AND Teacher.TName = '张三'
 ORDER BY SC.Score DESC LIMIT 1
 
+/*Q40: 成绩有重复的情况下，查询选修「张三」老师所授课程的学生中，成绩最高的学生信息及其成绩*/
+
+SELECT Student.*, t1.Score
+FROM Student, Course, Teacher, SC AS t1
+WHERE Student.SID = t1.SID
+AND t1.CID = Course.CID
+AND Course.TID = Teacher.TID
+AND Teacher.TName = '张三'
+AND (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) = 0
+
 /*Q41: 查询不同课程成绩相同的学生的学生编号、课程编号、学生成绩*/
 
 SELECT t1.*
@@ -292,6 +302,13 @@ ON t1.SID = t2.SID
 AND t1.CID != t2.CID
 AND t1.Score = t2.Score
 GROUP BY t1.SID, t1.CID
+
+/*Q42: 查询每门课成绩最好的前两名*/
+
+SELECT *
+FROM SC AS t1
+WHERE (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 2
+ORDER BY t1.CID
 
 /*Q43: 统计每门课程的学生选修人数（超过 5 人的课程才统计）*/
 
