@@ -320,3 +320,15 @@ HAVING COUNT(*) = (SELECT Count(*) FROM Course)
 
 SELECT Student.SName, (date('now') - SAge) AS Age
 FROM Student
+
+/*Q47: 查询本周过生日的学生*/
+
+SELECT *
+FROM Student
+WHERE Strftime('%W', 'Now') = Strftime('%W', SAge)
+
+/*Q48: 查询本月过生日的学生*/
+
+SELECT *
+FROM Student
+WHERE Strftime('%m', Date('Now')) = Strftime('%m', Sage)
