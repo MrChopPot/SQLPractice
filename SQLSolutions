@@ -118,7 +118,16 @@ AND Student.SID = SC.SID
 
 /*Q13: 查询和"01"号的同学学习的课程完全相同的其他同学的信息*/
 
-
+SELECT *
+FROM Student 
+WHERE Student.SID not in (
+SELECT t1.SID
+FROM
+(SELECT Student.SID, t.CID
+FROM Student, (SELECT CID FROM SC WHERE SID = '01') AS t ) AS t1 
+LEFT JOIN SC ON t1.SID = SC.SID AND t1.CID = SC.CID
+WHERE SC.CID is NULL)
+AND Student.SID != '01'
 
 /*Q14: 查询没学过"张三"老师讲授的任一门课程的学生姓名*/
 
@@ -160,6 +169,15 @@ ORDER BY t1.AvgS DESC
 （优秀率：及格为>=60，中等为：70-80，优良为：80-90，优秀为：>=90）
 要求输出课程号和选修人数，查询结果按人数降序排列，若人数相同，按课程号升序排列*/
 
+SELECT SC.CID, Count(*) AS ClassSize, 
+Max(SC.Score) AS Max, Min(SC.Score) AS Min, Round(Avg(SC.Score), 1) AS AvgS,
+Round(Cast(Sum(CASE WHEN SC.Score >= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS PassRate,  
+Round(Cast(Sum(CASE WHEN SC.Score BETWEEN 70 AND 79 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS MediumRate,
+Round(Cast(Sum(CASE WHEN SC.Score BETWEEN 80 AND 89 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS GoodRate,
+Round(Cast(Sum(CASE WHEN SC.Score >= 90 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ExcellentRate
+FROM SC
+GROUP BY CID
+ORDER BY Count(*) DESC, CID ASC
 
 /*Q25: 查询每门课程被选修的学生数*/
 
