@@ -368,3 +368,15 @@ WHERE Strftime('%W', 'Now') = Strftime('%W', SAge)
 SELECT *
 FROM Student
 WHERE Strftime('%m', Date('Now')) = Strftime('%m', Sage)
+
+/*Q49: 查询下周过生日的学生*/
+
+SELECT *
+FROM Student
+WHERE Strftime('%W', Date('Now')) = Strftime('%W',SAge) - 1
+
+/*Q50: 查询下月过生日的学生*/
+
+SELECT *
+FROM Student
+WHERE Strftime('%m', Date('Now')) = Strftime('%m', Sage) - 1
