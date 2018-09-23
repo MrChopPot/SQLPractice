@@ -275,3 +275,30 @@ AND t1.CID != t2.CID
 AND t1.Score = t2.Score
 GROUP BY t1.SID, t1.CID
 
+/*Q43: 统计每门课程的学生选修人数（超过 5 人的课程才统计）*/
+
+SELECT Course.CID, Course.CName, Count(*) AS ClassSize
+FROM SC, Course
+WHERE Course.CID = SC.CID
+GROUP BY SC.CID
+HAVING ClassSize > 5
+
+/*Q44: 检索至少选修两门课程的学生学号*/
+
+SELECT SID, Count(*) AS ClassNum
+FROM SC
+GROUP BY SID
+HAVING ClassNum >= 2
+
+/*Q45: 查询选修了全部课程的学生信息*/
+
+SELECT Student.*
+FROM Student, SC
+WHERE Student.SID = SC.SID
+GROUP BY SC.SID
+HAVING COUNT(*) = (SELECT Count(*) FROM Course)
+
+/*Q46: 查询各学生的年龄，按照出生日期来算，当前月日 < 出生年月的月日，则年龄减一*/
+
+SELECT Student.SName, (date('now') - SAge) AS Age
+FROM Student
