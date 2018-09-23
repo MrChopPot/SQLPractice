@@ -179,6 +179,25 @@ FROM SC
 GROUP BY CID
 ORDER BY Count(*) DESC, CID ASC
 
+/*Q23: 统计各科成绩各分数段人数：课程编号，课程名称，[100-85]，[85-70]，[70-60]，[60-0] 及所占百分比*/
+
+SELECT Course.CID, Course.CName,
+Round(Cast(Sum(CASE WHEN SC.Score <= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS FailRate,  
+Round(Cast(Sum(CASE WHEN SC.Score BETWEEN 60 AND 69 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS MediumRate,
+Round(Cast(Sum(CASE WHEN SC.Score BETWEEN 70 AND 84 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS GoodRate,
+Round(Cast(Sum(CASE WHEN SC.Score >= 85 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ExcellentRate
+FROM SC, Course
+WHERE Course.CID = SC.CID
+GROUP BY Course.CID
+ORDER BY Course.CID ASC
+
+/*Q24: 查询各科成绩前三名的记录*/
+
+SELECT *
+FROM SC AS t1
+WHERE (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 3
+ORDER BY t1.CID, t1.Score DESC
+
 /*Q25: 查询每门课程被选修的学生数*/
 
 SELECT Course.CName, Count(SC.Score) AS ClassSize
@@ -308,7 +327,7 @@ GROUP BY t1.SID, t1.CID
 SELECT *
 FROM SC AS t1
 WHERE (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 2
-ORDER BY t1.CID
+ORDER BY t1.CID, t1.Score DESC
 
 /*Q43: 统计每门课程的学生选修人数（超过 5 人的课程才统计）*/
 
