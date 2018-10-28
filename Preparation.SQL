@@ -15,7 +15,7 @@ Insert into Student Values
 ('13' , '孙七' , '2018-01-01' , '女');
 
 /*Course Table*/
-Create Table Course(CID varchar(10),CName nvarchar(10),TID varchar(10))
+Create Table Course(CID varchar(10),CName varchar(10),TID varchar(10))
 Insert into Course Values
 ('01' , '语文' , '02'),
 ('02' , '数学' , '01'),
