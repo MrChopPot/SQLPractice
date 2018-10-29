@@ -12,8 +12,8 @@ GROUP BY 1;
 SELECT Student.*, t1.Score AS Score01, t2.Score AS Score02
 FROM ((SELECT SID, Score FROM SC WHERE CID = '01') AS t1 
 INNER JOIN (SELECT SID,Score FROM SC WHERE CID = '02') AS t2 
-ON t1.SID = t2.SID AND t1.Score > t2.Score), Student 
-WHERE Student.SID = t1.SID;
+ON t1.SID = t2.SID AND t1.Score > t2.Score) AS t, Student 
+WHERE Student.SID = t.SID;
 
 /*2.Query student's info if one takes both course 01 & 02*/
 /*Solution1 (Without JOIN)*/
@@ -65,7 +65,7 @@ HAVING Avg_Score > 60;
 SELECT *
 FROM Student
 WHERE EXISTS (SELECT Score FROM SC 
-WHERE Student.SID = SC.SID);
+WHERE SID = Student.SID);
 /*Solution2 (w/ IN)*/
 SELECT *
 FROM Student
@@ -116,12 +116,22 @@ GROUP BY 1
 HAVING COUNT(*) = (SELECT COUNT(*) FROM Course));
 
 /*12.Query student's info if one has at least one same course with sid 01*/
+/* Solution 1*/
 SELECT DISTINCT Student.*
 FROM Student, SC
 WHERE CID IN(SELECT CID FROM SC
 WHERE SID = '01')
 AND Student.SID = SC.SID
 AND Student.SID != '01';
+                   
+/* Solution 2*/
+SELECT *
+FROM Student
+WHERE SID IN (SELECT SID FROM SC
+WHERE CID IN (SELECT CID FROM SC
+WHERE SID = '01')
+GROUP BY SID)
+AND SID != '01'
 
 /*13.Query student's info if one has exactly the same course with sid 01*/
 SELECT Student.*
@@ -132,12 +142,22 @@ AND Student.SID = SC.SID
 GROUP BY 1
 HAVING Count(*) = (SELECT Count(*) FROM SC WHERE SID = '01');
 
-/*14.Query student's info if one does not take any course taught by 张三*/
-SELECT *
+/*14.Query student's name if one does not take any course taught by 张三*/
+/* Solution1 (w/ IN)*/
+SELECT SName
 FROM Student
 WHERE SID NOT IN (SELECT SID
 FROM Course, Teacher, SC WHERE Teacher.TID = Course.TID
 AND Course.CID = SC.CID AND TName = '张三');
+/* Solution2 (w/ EXISTS)*/
+SELECT SName
+FROM Student
+WHERE NOT EXISTS (SELECT SC.SID
+FROM Course, Teacher, SC
+WHERE Teacher.TName = '张三'
+AND Course.TID = Teacher.TID
+AND SC.CID = Course.CID
+AND Student.SID = SC.SID)
 
 /*15.Query student's IDs, names and average score if one failed at least twice*/
 /*Solution1 (w/ CASE)*/
