@@ -29,7 +29,7 @@ Insert into Teacher Values
 ('03' , '王五');
 
 /*Score & Course Table*/
-Create Table SC(SId varchar(10),CId varchar(10),score decimal(18,1))
+Create Table SC(SId varchar(10),CId varchar(10),Score decimal(18,1))
 Insert into SC Values
 ('01' , '01' , 80),
 ('01' , '02' , 90),
