@@ -1,4 +1,4 @@
-# SQLPractice
+# CSDN 50 Classic SQL CSDN经典SQL50题
 The 50 Most Popular Questions for Advanced SQL
 
 My Way to tackle those puzzles. You're gonna like it. Create Database first, and then Solutions.
