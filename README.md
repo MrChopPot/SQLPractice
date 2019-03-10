@@ -1,10 +1,10 @@
-# Welcome, my friends!
+# Welcome, My Friends!
 
 You can find my answers for **3 sets of SQL Questions** in this folder: 
 
 * **CSDN 50 Classic SQL Questions**
-* **Hackerrank SQL**
-* **Leetcode Database (including premium questions)**
+* **HackerRank SQL**
+* **LeetCode Database (including premium questions)**
 
 I used SQLite for CSDN questions, MySQL & MS SQL for the last 2 sets.
 
