@@ -1,13 +1,13 @@
-/* Easy */
+/* EASy */
 
 /* 1. Combine Two Tables */
-SELECT FirstName, LastName, City, State
+SELECT FirstName, LAStName, City, State
 FROM Person
 LEFT JOIN Address
 ON Address.PersonId = Person.PersonId;
 
 /* 2. Second Highest Salary */
-SELECT MAX(Salary) As SecondHighestSalary
+SELECT MAX(Salary) AS SecondHighestSalary
 FROM Employee
 WHERE Salary < (SELECT MAX(Salary) FROM Employee);
 /* This method can be promoted to other scenarios */
@@ -25,7 +25,7 @@ WHERE p1.Email = p2.Email
 AND p1.Id < p2.Id;
 
 /* 5. Customers Who Never Order */
-SELECT FirstName, LastName, City, State
+SELECT FirstName, LAStName, City, State
 FROM Person
 LEFT JOIN Address
 ON Address.PersonId = Person.PersonId;
@@ -68,8 +68,8 @@ FROM world
 WHERE population > 25000000
 OR area > 3000000;
 
-/* 12. Classes More Than 5 Students */
-SELECT class
+/* 12. ClASses More Than 5 Students */
+SELECT clASs
 FROM courses
 GROUP BY 1
 HAVING COUNT(DISTINCT student) >= 5;
@@ -147,8 +147,8 @@ GROUP BY s1.Id, s1.Score
 ORDER BY s1.Score DESC;
 
 /* 33. Consecutive Numbers */
-Select DISTINCT l1.Num AS ConsecutiveNums 
-from Logs l1, Logs l2, Logs l3 
+SELECT DISTINCT l1.Num AS ConsecutiveNums 
+FROM Logs l1, Logs l2, Logs l3 
 where l1.Id=l2.Id-1 and l2.Id=l3.Id-1 
 and l1.Num=l2.Num and l2.Num=l3.Num;
 /* This just need the total number, so the solution could be simple */
@@ -161,7 +161,7 @@ WHERE e.DepartmentId = d.Id
 AND t.DepartmentId = e.DepartmentId
 AND Salary = t.max;
 
-/* 35. Managers with at Least 5 Direct Reports */
+/* 35. Managers with at LeASt 5 Direct Reports */
 SELECT Name
 FROM Employee AS t1 JOIN
 (SELECT ManagerId FROM Employee GROUP BY ManagerId 
@@ -197,7 +197,7 @@ AND CONCAT(LAT, LON) IN (SELECT CONCAT(LAT, LON) FROM insurance
     GROUP BY LAT, LON HAVING COUNT(*) = 1);
 /* Using CONCAT to apply the limitation to multiple columns */
 
-/* 40. Friend Requests II: Who Has Most Friend? */
+/* 40. Friend Requests II: Who HAS Most Friend? */
 SELECT id, num
 FROM (SELECT id, COUNT(*) AS num FROM 
 (SELECT requester_id AS id FROM request_accepted 
@@ -206,7 +206,7 @@ FROM (SELECT id, COUNT(*) AS num FROM
 GROUP BY id, num) tempTable
 ORDER BY num DESC
 LIMIT 1;
-/* Here exists an assumption that only one top */
+/* Here exists an ASsumption that only one top */
 
 /* 41. Tree Node */
 SELECT t.id, (CASE t.p_id 
@@ -251,7 +251,7 @@ WHERE (SELECT COUNT(DISTINCT e2.Salary)
                   WHERE e2.Salary > e1.Salary 
                   AND e1.DepartmentId = e2.DepartmentId) < 3 /* N */
 ORDER BY e1.DepartmentId, e1.Salary DESC;
-/* Classic method to get the top N of each group */
+/* ClASsic method to get the top N of each group */
 
 /* 46. Trips and Users */
 SELECT t.Request_at AS Day, 
@@ -306,7 +306,7 @@ FROM
 ORDER BY id ASC , month DESC;
 
 /* 50. Human Traffic of Stadium */
-SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium as s3
+SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium AS s3
  WHERE 
  ((s1.id + 1 = s2.id
  AND s1.id + 2 = s3.id)
@@ -324,47 +324,50 @@ GROUP BY s1.id;
 /* Output all the info that meets the requirement */
 
 /* 51. Average Salary: Departments VS Company (Star) */
-select department_salary.pay_month, department_id,
-case
-  when department_avg>company_avg then 'higher'
-  when department_avg<company_avg then 'lower'
-  else 'same'
-end as comparison
-from
+SELECT ds.pay_month, department_id,
+CASE
+  WHEN department_avg > company_avg THEN 'higher'
+  WHEN department_avg < company_avg THEN 'lower'
+  ELSE 'same'
+END AS comparison
+FROM
 (
-  select department_id, avg(amount) as department_avg, date_format(pay_date, '%Y-%m') as pay_month
-  from salary join employee on salary.employee_id = employee.employee_id
-  group by department_id, pay_month
-) as department_salary
-join
+  SELECT department_id, AVG(amount) AS department_avg, DATE_FORMAT(pay_date, '%Y-%m') AS pay_month
+  FROM salary s JOIN employee e ON s.employee_id = e.employee_id
+  GROUP BY department_id, pay_month
+) AS ds
+INNER JOIN
 (
-  select avg(amount) as company_avg,  date_format(pay_date, '%Y-%m') as pay_month from salary group by date_format(pay_date, '%Y-%m')
-) as company_salary
-on department_salary.pay_month = company_salary.pay_month;
+  SELECT AVG(amount) AS company_avg, DATE_FORMAT(pay_date, '%Y-%m') AS pay_month 
+  FROM salary 
+  GROUP BY date_format(pay_date, '%Y-%m')
+) AS cs
+ON ds.pay_month = cs.pay_month;
+/* DATE_FORMAT gets the month, complex JOIN */
 
 /* 52. Students Report By Geography (Star) */
 SELECT 
-    America, Asia, Europe
+    America, ASia, Europe
 FROM
-    (SELECT @as:=0, @am:=0, @eu:=0) t,
+    (SELECT @AS := 0, @am := 0, @eu: = 0) t, /* INIT */
     (SELECT 
-        @as:=@as + 1 AS asid, name AS Asia
+        @AS := @AS + 1 AS ASid, name AS ASia
     FROM
         student
     WHERE
-        continent = 'Asia'
-    ORDER BY Asia) AS t1
+        continent = 'ASia'
+    ORDER BY ASia) AS t1
         RIGHT JOIN
     (SELECT 
-        @am:=@am + 1 AS amid, name AS America
+        @am := @am + 1 AS amid, name AS America
     FROM
         student
     WHERE
         continent = 'America'
-    ORDER BY America) AS t2 ON asid = amid
+    ORDER BY America) AS t2 ON ASid = amid
         LEFT JOIN
     (SELECT 
-        @eu:=@eu + 1 AS euid, name AS Europe
+        @eu := @eu + 1 AS euid, name AS Europe
     FROM
         student
     WHERE
