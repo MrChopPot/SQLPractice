@@ -1,4 +1,5 @@
-##Welcome, my friends!
+Welcome, my friends!
+==
 
 You can find my answers for **3 sets of SQL Questions** in this folder: 
 
@@ -8,6 +9,7 @@ You can find my answers for **3 sets of SQL Questions** in this folder:
 
 I used SQLite for CSDN questions, MySQL & MS SQL for the last 2 sets.
 
-####Hope you enjoy!
+Hope you enjoy!
+--
 
-#####Please don't forget to click the Star! Thank you!
+Please don't forget to click the Star! Thank you!
