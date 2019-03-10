@@ -189,10 +189,24 @@ GROUP BY d.dept_name
 ORDER BY student_number DESC , d.dept_name;
 
 /* 39. Investments in 2016 */
-
+SELECT SUM(insurance.TIV_2016) AS TIV_2016
+FROM insurance
+WHERE TIV_2015 IN (SELECT TIV_2015 FROM insurance 
+    GROUP BY TIV_2015 HAVING COUNT(*) > 1)
+AND CONCAT(LAT, LON) IN (SELECT CONCAT(LAT, LON) FROM insurance 
+    GROUP BY LAT, LON HAVING COUNT(*) = 1);
+/* Using CONCAT to apply the limitation to multiple columns */
 
 /* 40. Friend Requests II: Who Has Most Friend? */
-
+SELECT id, num
+FROM (SELECT id, COUNT(*) AS num FROM 
+(SELECT requester_id AS id FROM request_accepted 
+    UNION ALL 
+    SELECT accepter_id AS id FROM request_accepted) idTable
+GROUP BY id, num) tempTable
+ORDER BY num DESC
+LIMIT 1;
+/* Here exists an assumption that only one top */
 
 /* 41. Tree Node */
 SELECT t.id, (CASE t.p_id 
@@ -228,15 +242,16 @@ ORDER BY id;
 /* Hard */
 
 /* 45. Department Top Three Salaries */
-select d.Name Department, e1.Name Employee, e1.Salary
-from Employee e1 
-join Department d
-on e1.DepartmentId = d.Id
-where (select count(distinct(e2.Salary)) 
-                  from Employee e2 
-                  where e2.Salary > e1.Salary 
-                  and e1.DepartmentId = e2.DepartmentId) < 3
-order by e1.DepartmentId, e1.Salary DESC;
+SELECT d.Name AS Department, e1.Name AS Employee, e1.Salary
+FROM Employee e1 
+INNER JOIN Department d
+ON e1.DepartmentId = d.Id
+WHERE (SELECT COUNT(DISTINCT e2.Salary) 
+                  FROM Employee e2 
+                  WHERE e2.Salary > e1.Salary 
+                  AND e1.DepartmentId = e2.DepartmentId) < 3 /* N */
+ORDER BY e1.DepartmentId, e1.Salary DESC;
+/* Classic method to get the top N of each group */
 
 /* 46. Trips and Users */
 SELECT t.Request_at AS Day, 
@@ -245,10 +260,11 @@ AS 'Cancellation Rate'
 FROM Trips t INNER JOIN Users u
 ON u.Users_id = t.Client_id
 WHERE u.Banned = "No"
-AND t.Request_at BETWEEN '2013-10-01' AND '2013-10-03'
+AND t.Request_at BETWEEN '2013-10-01' AND '2013-10-03' /* Here Request_at is Datetime */
 GROUP BY 1
+/* Here you can use INNER JOIN + ON or , + AND */
 
-/* 47. Median Employee Salary */
+/* 47. Median Employee Salary (Star) */
 SELECT e1.Id, e2.Company, e3.Salary
 FROM Employee e1, Employee e2
 WHERE e1.Company = e2.Company
@@ -256,7 +272,7 @@ GROUP BY e1.Company, e2.Salary
 HAVING SUM(CASE WHEN e1.Salary = e2.Salary THEN 1 
     ELSE 0 END) >= ABS(SUM(SIGN(e1.Salary - e2.Salary)))
 ORDER BY e1.Id;
-/* Find median! */
+/* Find median! SIGN: 1 if >0, 0 if 0, -1 if <0 */
 
 /* 48. Find Median Given Frequency of Numbers (Star) */
 SELECT AVG(Number) AS median 
@@ -287,8 +303,7 @@ FROM
         LEFT JOIN
     Employee E3 ON (E3.id = E1.id
         AND E3.month = E1.month - 2)
-ORDER BY id ASC , month DESC
-;
+ORDER BY id ASC , month DESC;
 
 /* 50. Human Traffic of Stadium */
 SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium as s3
@@ -325,8 +340,7 @@ join
 (
   select avg(amount) as company_avg,  date_format(pay_date, '%Y-%m') as pay_month from salary group by date_format(pay_date, '%Y-%m')
 ) as company_salary
-on department_salary.pay_month = company_salary.pay_month
-;
+on department_salary.pay_month = company_salary.pay_month;
 
 /* 52. Students Report By Geography (Star) */
 SELECT 
@@ -355,6 +369,5 @@ FROM
         student
     WHERE
         continent = 'Europe'
-    ORDER BY Europe) AS t3 ON amid = euid
-;
+    ORDER BY Europe) AS t3 ON amid = euid;
 
