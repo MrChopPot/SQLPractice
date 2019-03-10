@@ -5,4 +5,4 @@ There are 58 questions (Easy 40, Medium 16, Hard 2) on Hackerrank, and I created
 
 ### Enjoy!
 
-##### And don't forget to try coding yourself if you think you've already know how to do.
+##### And don't forget to try coding yourself even if you think you've already know how to do.
