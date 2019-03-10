@@ -228,3 +228,133 @@ ORDER BY id;
 /* Hard */
 
 /* 45. Department Top Three Salaries */
+select d.Name Department, e1.Name Employee, e1.Salary
+from Employee e1 
+join Department d
+on e1.DepartmentId = d.Id
+where (select count(distinct(e2.Salary)) 
+                  from Employee e2 
+                  where e2.Salary > e1.Salary 
+                  and e1.DepartmentId = e2.DepartmentId) < 3
+order by e1.DepartmentId, e1.Salary DESC;
+
+/* 46. Trips and Users */
+SELECT t.Request_at AS Day, 
+ROUND(COUNT(CASE t.Status WHEN "completed" THEN NULL ELSE 1 END) / COUNT(*), 2)
+AS 'Cancellation Rate'
+FROM Trips t INNER JOIN Users u
+ON u.Users_id = t.Client_id
+WHERE u.Banned = "No"
+AND t.Request_at BETWEEN '2013-10-01' AND '2013-10-03'
+GROUP BY 1
+
+/* 47. Median Employee Salary */
+SELECT e1.Id, e2.Company, e3.Salary
+FROM Employee e1, Employee e2
+WHERE e1.Company = e2.Company
+GROUP BY e1.Company, e2.Salary
+HAVING SUM(CASE WHEN e1.Salary = e2.Salary THEN 1 
+    ELSE 0 END) >= ABS(SUM(SIGN(e1.Salary - e2.Salary)))
+ORDER BY e1.Id;
+/* Find median! */
+
+/* 48. Find Median Given Frequency of Numbers (Star) */
+SELECT AVG(Number) AS median 
+FROM (SELECT Number, Frequency, AccFreq, SumFreq 
+    FROM (SELECT Number, Frequency, @curFreq := @curFreq + Frequency AS AccFreq
+        FROM Numbers n, (SELECT @curFreq := 0) r ORDER BY  Number) t1, 
+        (SELECT SUM(Frequency) SumFreq FROM Numbers) t2) t
+WHERE AccFreq BETWEEN SumFreq / 2 AND SumFreq / 2 + Frequency
+
+/* 49. Find Cumulative Salary of an Employee */
+SELECT
+    E1.id,
+    E1.month,
+    (IFNULL(E1.salary, 0) + IFNULL(E2.salary, 0) + IFNULL(E3.salary, 0)) AS Salary
+FROM
+    (SELECT
+        id, MAX(month) AS month
+    FROM
+        Employee
+    GROUP BY id
+    HAVING COUNT(*) > 1) AS maxmonth
+        LEFT JOIN
+    Employee E1 ON (maxmonth.id = E1.id
+        AND maxmonth.month > E1.month)
+        LEFT JOIN
+    Employee E2 ON (E2.id = E1.id
+        AND E2.month = E1.month - 1)
+        LEFT JOIN
+    Employee E3 ON (E3.id = E1.id
+        AND E3.month = E1.month - 2)
+ORDER BY id ASC , month DESC
+;
+
+/* 50. Human Traffic of Stadium */
+SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium as s3
+ WHERE 
+ ((s1.id + 1 = s2.id
+ AND s1.id + 2 = s3.id)
+ OR 
+ (s1.id - 1 = s2.id
+ AND s1.id + 1 = s3.id)
+ OR
+ (s1.id - 2 = s2.id
+ AND s1.id - 1 = s3.id)
+ )
+ AND s1.people >= 100 
+ AND s2.people >= 100
+ AND s3.people >= 100
+GROUP BY s1.id;
+/* Output all the info that meets the requirement */
+
+/* 51. Average Salary: Departments VS Company (Star) */
+select department_salary.pay_month, department_id,
+case
+  when department_avg>company_avg then 'higher'
+  when department_avg<company_avg then 'lower'
+  else 'same'
+end as comparison
+from
+(
+  select department_id, avg(amount) as department_avg, date_format(pay_date, '%Y-%m') as pay_month
+  from salary join employee on salary.employee_id = employee.employee_id
+  group by department_id, pay_month
+) as department_salary
+join
+(
+  select avg(amount) as company_avg,  date_format(pay_date, '%Y-%m') as pay_month from salary group by date_format(pay_date, '%Y-%m')
+) as company_salary
+on department_salary.pay_month = company_salary.pay_month
+;
+
+/* 52. Students Report By Geography (Star) */
+SELECT 
+    America, Asia, Europe
+FROM
+    (SELECT @as:=0, @am:=0, @eu:=0) t,
+    (SELECT 
+        @as:=@as + 1 AS asid, name AS Asia
+    FROM
+        student
+    WHERE
+        continent = 'Asia'
+    ORDER BY Asia) AS t1
+        RIGHT JOIN
+    (SELECT 
+        @am:=@am + 1 AS amid, name AS America
+    FROM
+        student
+    WHERE
+        continent = 'America'
+    ORDER BY America) AS t2 ON asid = amid
+        LEFT JOIN
+    (SELECT 
+        @eu:=@eu + 1 AS euid, name AS Europe
+    FROM
+        student
+    WHERE
+        continent = 'Europe'
+    ORDER BY Europe) AS t3 ON amid = euid
+;
+
