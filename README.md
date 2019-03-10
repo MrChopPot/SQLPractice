@@ -1,6 +1,6 @@
 # Welcome, My Friends!
 
-You can find my answers for **3 sets of SQL Questions** in this folder: 
+You can find my solutions for **3 sets of SQL Questions** in this folder: 
 
 * **CSDN 50 Classic SQL Questions**
 * **HackerRank SQL**
