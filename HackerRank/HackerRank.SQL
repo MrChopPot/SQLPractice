@@ -129,7 +129,7 @@ SELECT COUNT(*)
 FROM CITY
 WHERE POPULATION > 100000;
 
-/* 23. Revising Aggregations - The Sum Function */
+/* 23. Revising Aggregations - The SUM Function */
 SELECT SUM(POPULATION)
 FROM CITY
 WHERE DISTRICT = "CAlifornia";
@@ -157,12 +157,12 @@ SELECT CEILING(AVG(SALARY) - AVG(REPLACE(SALARY,'0','')))
 FROM Employees;
 /* CEILING, REPLACE */
 
-/* 29. Top Earners */
+/* 29. Top Earners (Star) */
 SELECT (salary * months) AS earnings, COUNT(*) 
 FROM Employee 
 GROUP BY 1 
-ORDER BY earnings 
-DESC LIMIT 1;
+ORDER BY earnings DESC 
+LIMIT 1;
 /* What if there is more than 1 top earners? */
 SELECT MAX(salary * months) AS earnings, COUNT(*) 
 FROM Employee 
@@ -281,9 +281,9 @@ SELECT c.company_code, c.founder,
     COUNT(DISTINCT m.manager_code), COUNT(DISTINCT e.employee_code) 
 FROM Company c, Lead_Manager l, Senior_Manager s, Manager m, Employee e 
 WHERE c.company_code = l.company_code 
-    AND l.lead_manager_code = s.lead_manager_code 
-    AND s.senior_manager_code = m.senior_manager_code 
-    AND m.manager_code = e.manager_code 
+AND l.lead_manager_code = s.lead_manager_code 
+AND s.senior_manager_code = m.senior_manager_code 
+AND m.manager_code = e.manager_code 
 GROUP BY c.company_code /* omit c.founder here is ok*/
 ORDER BY c.company_code;
 /* Combined query w/o (INNER) JOIN */
@@ -320,7 +320,7 @@ SELECT (CASE WHEN g.Grade >= 8 THEN s.Name ELSE NULL END), g.Grade, s.Marks
 FROM Students s INNER JOIN Grades g 
 ON s.Marks BETWEEN Min_Mark AND Max_Mark 
 ORDER BY g.Grade DESC,s.Name, s.Marks;
-/* Quick JOIN on other conditions */
+/* Quick JOIN on other conditions: could also be done w/o JOIN */
 
 /* 49. Top Competitors */
 SELECT
@@ -343,7 +343,7 @@ ORDER BY
     ,h.hacker_id;
 /* Must use JOIN */
 
-/* 50. OllivANDer's Inventory */
+/* 50. Ollivander's Inventory */
 SELECT w.id, p.age, w.coins_needed, w.power 
 FROM WANDs AS w JOIN WANDs_Property AS p 
 ON w.code = p.code
@@ -351,9 +351,9 @@ WHERE p.is_evil = 0
 AND w.coins_needed = (SELECT MIN(coins_needed) FROM WANDs AS w1 JOIN WANDs_Property AS p1 
                       ON w1.code = p1.code WHERE w1.power = w.power AND p1.age = p.age) 
 ORDER BY w.power DESC, p.age DESC
-/* Using subquery to get min after group by */
+/* Using subquery to get min after GROUP BY */
 
-/* 51. Challenges (Star) */
+/* 51. Challenges */
 SELECT c.hacker_id, h.name, COUNT(c.hacker_id) AS c_count
 FROM Hackers h
     INNER JOIN Challenges c 
@@ -394,12 +394,13 @@ ORDER BY DATEDIFF(MIN(End_Date), Start_Date), Start_Date;
 
 /* 54. Placements */
 SELECT S.Name
-FROM (Students S JOIN Friends F Using(ID)
-      JOIN Packages P1 ON S.ID = P1.ID
-      JOIN Packages P2 ON F.Friend_ID = P2.ID)
+FROM Students S, Friends F, Packages P1, Packages P2
 WHERE P2.Salary > P1.Salary
+AND S.ID = F.ID
+AND S.ID = P1.ID
+AND F.Friend_ID = P2.ID
 ORDER BY P2.Salary;
-/* Contrast on multiple tables */
+/* Combine multiple tables */
 
 /* 55. Symmetric Pairs */
 SELECT x, y FROM functions f1 
@@ -414,22 +415,21 @@ ORDER BY x;
 /* 56. Print Prime Numbers (Star) */
 SELECT GROUP_CONCAT(NUMB SEPARATOR '&')
 FROM (
-    SELECT @num:=@num+1 as NUMB FROM
+    SELECT @num := @num + 1 as NUMB FROM
     information_schema.tables t1,
     information_schema.tables t2,
-    (SELECT @num:=1) tmp
-) tempNum
-WHERE NUMB<=1000 AND NOT EXISTS(
+    (SELECT @num := 1) temp1
+) tempNum1
+WHERE NUMB <= 1000 AND NOT EXISTS(
         SELECT * FROM (
             SELECT @nu := @nu + 1 AS NUMA FROM
                 information_schema.tables t1,
                 information_schema.tables t2,
-                (SELECT @nu := 1) tmp1
+                (SELECT @nu := 1) temp2
                 LIMIT 1000
-            ) tatata
+            ) tempNum2
         WHERE FLOOR(NUMB / NUMA) = (NUMB / NUMA) AND NUMA < NUMB AND NUMA > 1
     );
-
 
 /* Hard */
 
