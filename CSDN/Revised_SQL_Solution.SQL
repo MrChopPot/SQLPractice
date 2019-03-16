@@ -406,7 +406,8 @@ WHERE Student.SID = SC.SID
 AND SC.CID = Course.CID
 AND Course.TID = Teacher.TID
 AND Teacher.TName = '张三'
-ORDER BY SC.Score DESC LIMIT 1;
+ORDER BY SC.Score DESC 
+LIMIT 1;
 
 
 /*40.Query top 1 student's info and score in course taught by 张三 (included equal scores)*/
@@ -420,9 +421,19 @@ AND (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score
 
 
 /*41.Query student's SID, CID and Score if ones have same score for different courses*/
+
+/*Solution1 (w/ JOIN)*/
 SELECT t1.*
 FROM SC t1 INNER JOIN SC t2
 ON t1.SID = t2.SID
+AND t1.CID != t2.CID
+AND t1.Score = t2.Score
+GROUP BY t1.SID, t1.CID;
+
+/*Solution2 (w/o JOIN)*/
+SELECT t1.*
+FROM SC t1, SC t2
+WHERE t1.SID = t2.SID
 AND t1.CID != t2.CID
 AND t1.Score = t2.Score
 GROUP BY t1.SID, t1.CID;
@@ -440,14 +451,14 @@ SELECT Course.CID, Course.CName, Count(*) AS Class_Size
 FROM SC, Course
 WHERE Course.CID = SC.CID
 GROUP BY SC.CID
-HAVING Class_Size > 5;
+HAVING Class_Size >= 5;
 
 
 /*44.Query student's info if one takes more than two courses*/
 SELECT SID, Count(*) AS ClassNum
 FROM SC
 GROUP BY SID
-HAVING ClassNum >= 2;
+HAVING ClassNum > 2;
 
 
 /*45.Query student's info if one takes all courses*/
