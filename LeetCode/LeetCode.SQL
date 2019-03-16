@@ -1,4 +1,4 @@
-/* EASy */
+/* Easy */
 
 /* 1. Combine Two Tables */
 SELECT FirstName, LAStName, City, State
@@ -25,7 +25,7 @@ WHERE p1.Email = p2.Email
 AND p1.Id < p2.Id;
 
 /* 5. Customers Who Never Order */
-SELECT FirstName, LAStName, City, State
+SELECT FirstName, LastName, City, State
 FROM Person
 LEFT JOIN Address
 ON Address.PersonId = Person.PersonId;
@@ -68,8 +68,8 @@ FROM world
 WHERE population > 25000000
 OR area > 3000000;
 
-/* 12. ClASses More Than 5 Students */
-SELECT clASs
+/* 12. Classes More Than 5 Students */
+SELECT class
 FROM courses
 GROUP BY 1
 HAVING COUNT(DISTINCT student) >= 5;
@@ -161,7 +161,7 @@ WHERE e.DepartmentId = d.Id
 AND t.DepartmentId = e.DepartmentId
 AND Salary = t.max;
 
-/* 35. Managers with at LeASt 5 Direct Reports */
+/* 35. Managers with at Least 5 Direct Reports */
 SELECT Name
 FROM Employee AS t1 JOIN
 (SELECT ManagerId FROM Employee GROUP BY ManagerId 
@@ -197,7 +197,7 @@ AND CONCAT(LAT, LON) IN (SELECT CONCAT(LAT, LON) FROM insurance
     GROUP BY LAT, LON HAVING COUNT(*) = 1);
 /* Using CONCAT to apply the limitation to multiple columns */
 
-/* 40. Friend Requests II: Who HAS Most Friend? */
+/* 40. Friend Requests II: Who Has Most Friend? */
 SELECT id, num
 FROM (SELECT id, COUNT(*) AS num FROM 
 (SELECT requester_id AS id FROM request_accepted 
@@ -251,7 +251,7 @@ WHERE (SELECT COUNT(DISTINCT e2.Salary)
                   WHERE e2.Salary > e1.Salary 
                   AND e1.DepartmentId = e2.DepartmentId) < 3 /* N */
 ORDER BY e1.DepartmentId, e1.Salary DESC;
-/* ClASsic method to get the top N of each group */
+/* Classic method to get the top N of each group */
 
 /* 46. Trips and Users */
 SELECT t.Request_at AS Day, 
@@ -347,16 +347,16 @@ ON ds.pay_month = cs.pay_month;
 
 /* 52. Students Report By Geography (Star) */
 SELECT 
-    America, ASia, Europe
+    America, Asia, Europe
 FROM
-    (SELECT @AS := 0, @am := 0, @eu: = 0) t, /* INIT */
+    (SELECT @as := 0, @am := 0, @eu: = 0) t, /* INIT */
     (SELECT 
-        @AS := @AS + 1 AS ASid, name AS ASia
+        @as := @as + 1 AS asid, name AS Asia
     FROM
         student
     WHERE
-        continent = 'ASia'
-    ORDER BY ASia) AS t1
+        continent = 'Asia'
+    ORDER BY Asia) AS t1
         RIGHT JOIN
     (SELECT 
         @am := @am + 1 AS amid, name AS America
@@ -364,7 +364,7 @@ FROM
         student
     WHERE
         continent = 'America'
-    ORDER BY America) AS t2 ON ASid = amid
+    ORDER BY America) AS t2 ON asid = amid
         LEFT JOIN
     (SELECT 
         @eu := @eu + 1 AS euid, name AS Europe
