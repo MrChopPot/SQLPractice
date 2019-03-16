@@ -1,6 +1,6 @@
-/*Student Table*/
-Create Table Student(SID varchar(10),SName varchar(10),SAge datetime,SSex varchar(10))
-Insert into Student Values
+/*Student TABLE*/
+CREATE TABLE Student(SID varchar(10),SName varchar(10),SAge datetime,SSex varchar(10))
+INSERT INTO Student VALUES
 ('01' , '赵雷' , '1990-01-01' , '男'),
 ('02' , '钱电' , '1990-12-21' , '男'),
 ('03' , '孙风' , '1990-05-20' , '男'),
@@ -14,23 +14,23 @@ Insert into Student Values
 ('12' , '赵六' , '2017-01-01' , '女'),
 ('13' , '孙七' , '2018-01-01' , '女');
 
-/*Course Table*/
-Create Table Course(CID varchar(10),CName varchar(10),TID varchar(10))
-Insert into Course Values
+/*Course TABLE*/
+CREATE TABLE Course(CID varchar(10),CName varchar(10),TID varchar(10))
+INSERT INTO Course VALUES
 ('01' , '语文' , '02'),
 ('02' , '数学' , '01'),
 ('03' , '英语' , '03');
 
-/*Teacher Table*/
-Create Table Teacher(TID varchar(10),TName varchar(10))
-Insert into Teacher Values
+/*Teacher TABLE*/
+CREATE TABLE Teacher(TID varchar(10),TName varchar(10))
+INSERT INTO Teacher VALUES
 ('01' , '张三'),
 ('02' , '李四'),
 ('03' , '王五');
 
-/*Score & Course Table*/
-Create Table SC(SId varchar(10),CId varchar(10),Score decimal(18,1))
-Insert into SC Values
+/*Score & Course TABLE*/
+CREATE TABLE SC(SId varchar(10),CId varchar(10),Score decimal(18,1))
+INSERT INTO SC VALUES
 ('01' , '01' , 80),
 ('01' , '02' , 90),
 ('01' , '03' , 99),
