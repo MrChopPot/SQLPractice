@@ -384,3 +384,5 @@ FROM
         continent = 'Europe'
     ORDER BY Europe) t3 
     ON amid = euid;
+
+
