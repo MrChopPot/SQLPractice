@@ -81,7 +81,6 @@ AS accept_rate
 FROM friend_request, request_accepted
 /* COALESCE, COUNT (DISTINCT Col1, Col2) */
 
-
 /* 14. Consecutive Available Seats (Star) */
 SELECT DISTINCT c1.seat_id
 FROM cinema c1 INNER JOIN cinema c2
@@ -89,12 +88,12 @@ ON ABS(c1.seat_id - c2.seat_id) = 1
 AND c1.free = 1
 AND c2.free = 1
 ORDER BY a.seat_id;
-/* JOIN ON other conditions, 1 for True */
+/* JOIN ON other conditions, could also be done w/o JOIN; 1 for True */
 
 /* 15. Sales Person */
 SELECT s.name
 FROM salesperson s
-WHERE s.sales_id NOT IN 
+WHERE s.sales_id NOT IN
 (SELECT o.sales_id FROM orders o, company c 
 WHERE o.com_id = c.com_id AND c.name = 'RED');
 
@@ -126,6 +125,7 @@ ORDER BY rating DESC；
 UPDATE salary
 SET sex = CASE sex 
 WHEN 'm' THEN 'f' ELSE 'm' END;
+/* Good use of SET & CASE */
 
 
 /* Medium */
@@ -149,8 +149,8 @@ ORDER BY s1.Score DESC;
 /* 33. Consecutive Numbers */
 SELECT DISTINCT l1.Num AS ConsecutiveNums 
 FROM Logs l1, Logs l2, Logs l3 
-where l1.Id=l2.Id-1 and l2.Id=l3.Id-1 
-and l1.Num=l2.Num and l2.Num=l3.Num;
+where l1.Id = l2.Id-1 and l2.Id = l3.Id-1 
+and l1.Num = l2.Num and l2.Num = l3.Num;
 /* This just need the total number, so the solution could be simple */
 
 /* 34. Department Highest Salary */
@@ -170,11 +170,27 @@ ON t1.Id = t2.ManagerId;
 
 /* 36. Winning Candidate */
 SELECT name AS 'Name'
-FROM Candidate JOIN (SELECT Candidateid FROM Vote 
-    GROUP BY Candidateid ORDER BY COUNT(*) DESCLIMIT 1) AS winner 
+FROM Candidate, (SELECT Candidateid FROM Vote 
+    GROUP BY Candidateid ORDER BY COUNT(*) DESC LIMIT 1) AS winner 
 WHERE Candidate.id = winner.Candidateid;
+/* If there exists multiple 1st */
+SELECT name AS 'Name'
+FROM Candidate
+WHERE id IN (SELECT Candidateid FROM Vote GROUP BY Candidateid
+HAVING COUNT(*) = (SELECT MAX(COUNT(*)) FROM Vote GROUP BY Candidateid));
 
-/* 37. Get Highest Answer Rate Question */
+/* 37. Get Highest Answer Rate Question (Star) */
+/* Solution 1 */
+SELECT question_id as survey_log
+FROM
+(SELECT question_id,
+        SUM(case when action="answer" THEN 1 ELSE 0 END) as num_answer,
+        SUM(case when action="show" THEN 1 ELSE 0 END) as num_show,    
+    FROM survey_log
+    GROUP BY question_id) as tbl
+ORDER BY (num_answer / num_show) DESC
+LIMIT 1;
+/* Solution 2 */
 SELECT question_id AS 'survey_log'
 FROM survey_log
 GROUP BY question_id
@@ -206,7 +222,7 @@ FROM (SELECT id, COUNT(*) AS num FROM
 GROUP BY id, num) tempTable
 ORDER BY num DESC
 LIMIT 1;
-/* Here exists an ASsumption that only one top */
+/* Here exists an assumption that only one top */
 
 /* 41. Tree Node */
 SELECT t.id, (CASE t.p_id 
@@ -265,10 +281,10 @@ GROUP BY 1
 /* Here you can use INNER JOIN + ON or , + AND */
 
 /* 47. Median Employee Salary (Star) */
-SELECT e1.Id, e2.Company, e3.Salary
+SELECT e1.Id, e1.Company, e1.Salary
 FROM Employee e1, Employee e2
 WHERE e1.Company = e2.Company
-GROUP BY e1.Company, e2.Salary
+GROUP BY e1.Company, e1.Salary
 HAVING SUM(CASE WHEN e1.Salary = e2.Salary THEN 1 
     ELSE 0 END) >= ABS(SUM(SIGN(e1.Salary - e2.Salary)))
 ORDER BY e1.Id;
@@ -278,21 +294,14 @@ ORDER BY e1.Id;
 SELECT AVG(Number) AS median 
 FROM (SELECT Number, Frequency, AccFreq, SumFreq 
     FROM (SELECT Number, Frequency, @curFreq := @curFreq + Frequency AS AccFreq
-        FROM Numbers n, (SELECT @curFreq := 0) r ORDER BY  Number) t1, 
-        (SELECT SUM(Frequency) SumFreq FROM Numbers) t2) t
+        FROM Numbers n, (SELECT @curFreq := 0) r ORDER BY 1) t1, 
+        (SELECT SUM(Frequency) AS SumFreq FROM Numbers) t2) t
 WHERE AccFreq BETWEEN SumFreq / 2 AND SumFreq / 2 + Frequency
 
-/* 49. Find Cumulative Salary of an Employee */
-SELECT
-    E1.id,
-    E1.month,
+/* 49. Find Cumulative Salary of an Employee (Star) */
+SELECT E1.id, E1.month,
     (IFNULL(E1.salary, 0) + IFNULL(E2.salary, 0) + IFNULL(E3.salary, 0)) AS Salary
-FROM
-    (SELECT
-        id, MAX(month) AS month
-    FROM
-        Employee
-    GROUP BY id
+FROM (SELECT id, MAX(month) AS month FROM Employee GROUP BY id
     HAVING COUNT(*) > 1) AS maxmonth
         LEFT JOIN
     Employee E1 ON (maxmonth.id = E1.id
@@ -303,7 +312,7 @@ FROM
         LEFT JOIN
     Employee E3 ON (E3.id = E1.id
         AND E3.month = E1.month - 2)
-ORDER BY id ASC , month DESC;
+ORDER BY id, month DESC;
 
 /* 50. Human Traffic of Stadium */
 SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium AS s3
@@ -321,7 +330,7 @@ SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium AS s3
  AND s2.people >= 100
  AND s3.people >= 100
 GROUP BY s1.id;
-/* Output all the info that meets the requirement */
+/* Output all the info that meets the requirement (So not only s1.id) */
 
 /* 51. Average Salary: Departments VS Company (Star) */
 SELECT ds.pay_month, department_id,
@@ -332,15 +341,15 @@ CASE
 END AS comparison
 FROM
 (
-  SELECT department_id, AVG(amount) AS department_avg, DATE_FORMAT(pay_date, '%Y-%m') AS pay_month
-  FROM salary s JOIN employee e ON s.employee_id = e.employee_id
-  GROUP BY department_id, pay_month
+  SELECT DATE_FORMAT(pay_date, '%Y-%m') AS pay_month, department_id, AVG(amount) AS department_avg
+  FROM salary s, employee e WHERE s.employee_id = e.employee_id
+  GROUP BY 1, 2
 ) AS ds
 INNER JOIN
 (
-  SELECT AVG(amount) AS company_avg, DATE_FORMAT(pay_date, '%Y-%m') AS pay_month 
+  SELECT DATE_FORMAT(pay_date, '%Y-%m') AS pay_month, AVG(amount) AS company_avg
   FROM salary 
-  GROUP BY date_format(pay_date, '%Y-%m')
+  GROUP BY 1
 ) AS cs
 ON ds.pay_month = cs.pay_month;
 /* DATE_FORMAT gets the month, complex JOIN */
@@ -349,22 +358,23 @@ ON ds.pay_month = cs.pay_month;
 SELECT 
     America, Asia, Europe
 FROM
-    (SELECT @as := 0, @am := 0, @eu: = 0) t, /* INIT */
-    (SELECT 
-        @as := @as + 1 AS asid, name AS Asia
-    FROM
-        student
-    WHERE
-        continent = 'Asia'
-    ORDER BY Asia) AS t1
-        RIGHT JOIN
+    (SELECT @am := 0, @as := 0, @eu := 0) t, /* INIT */
     (SELECT 
         @am := @am + 1 AS amid, name AS America
     FROM
         student
     WHERE
         continent = 'America'
-    ORDER BY America) AS t2 ON asid = amid
+    ORDER BY America) t1
+        LEFT JOIN
+    (SELECT 
+        @as := @as + 1 AS asid, name AS Asia
+    FROM
+        student
+    WHERE
+        continent = 'Asia'
+    ORDER BY Asia) t2 
+    ON asid = amid
         LEFT JOIN
     (SELECT 
         @eu := @eu + 1 AS euid, name AS Europe
@@ -372,5 +382,5 @@ FROM
         student
     WHERE
         continent = 'Europe'
-    ORDER BY Europe) AS t3 ON amid = euid;
-
+    ORDER BY Europe) t3 
+    ON amid = euid;
