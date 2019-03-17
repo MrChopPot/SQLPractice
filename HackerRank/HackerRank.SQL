@@ -39,7 +39,7 @@ FROM STATION;
 /* 8. Weather Observation Station 3 */
 SELECT DISTINCT CITY
 FROM STATION
-WHERE ID % 2 = 0; /* OperatORs in SQL */
+WHERE ID % 2 = 0; /* Operators in SQL */
 
 /* 9. Weather Observation Station 4 */
 SELECT COUNT(CITY) - COUNT(DISTINCT CITY) 
@@ -123,7 +123,6 @@ SELECT (CASE
         WHEN a = b OR b = c OR c = a THEN "Isosceles"
 ELSE "Scalene" END) FROM Triangles;
 
-
 /* 22. Revising Aggregations - The COUNT Function */
 SELECT COUNT(*)
 FROM CITY
@@ -132,7 +131,7 @@ WHERE POPULATION > 100000;
 /* 23. Revising Aggregations - The SUM Function */
 SELECT SUM(POPULATION)
 FROM CITY
-WHERE DISTRICT = "CAlifornia";
+WHERE DISTRICT = "California";
 
 /* 24. Revising Aggregations - Averages */
 SELECT AVG(POPULATION)
@@ -164,10 +163,10 @@ GROUP BY 1
 ORDER BY earnings DESC 
 LIMIT 1;
 /* What if there is more than 1 top earners? */
-SELECT MAX(salary * months) AS earnings, COUNT(*) 
-FROM Employee 
-WHERE salary * months = (SELECT MAX(salary * months) FROM Employee)
-GROUP BY salary * months;
+SELECT salary * months AS earnings, COUNT(*)
+FROM Employee
+GROUP BY 1
+HAVING earnings = (SELECT MAX(salary * months) FROM Employee);
 
 /* 30. Weather Observation Station 2 */
 SELECT ROUND(SUM(LAT_N), 2) AS LAT, ROUND(SUM(LONG_W), 2) AS LONG
@@ -300,19 +299,19 @@ FROM STATION;
 
 /* 47. Weather Observation Station 20 (Star) */
 SELECT IF((SELECT MOD(COUNT(LAT_N),2) FROM STATION) = 0,
-            (SELECT ROUND(S.LAT_N, 4) Median
-                FROM STATION S
-                WHERE ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) + 1) =
-                      (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N)
-                    OR
-                      (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) =
-                      ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N) + 1)
-             ),
-            (SELECT ROUND(S.LAT_N, 4) Median
-                FROM STATION S
-                WHERE (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) = 
-                      (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N)
-             ));
+(SELECT ROUND(S.LAT_N, 4) Median
+FROM STATION S
+WHERE ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) + 1) =
+      (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N)
+    OR
+      (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) =
+      ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N) + 1)
+ ),
+(SELECT ROUND(S.LAT_N, 4) Median
+FROM STATION S
+WHERE (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) = 
+      (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N)
+         ));
 /* Find Median! */
 
 /* 48. The Report (Star) */
@@ -322,57 +321,36 @@ ON s.Marks BETWEEN Min_Mark AND Max_Mark
 ORDER BY g.Grade DESC,s.Name, s.Marks;
 /* Quick JOIN on other conditions: could also be done w/o JOIN */
 
-/* 49. Top Competitors */
-SELECT
-    h.hacker_id
-    ,h.name
-FROM
-    Hackers AS h
-    JOIN Submissions AS s ON s.hacker_id = h.hacker_id
-    JOIN Challenges AS c ON c.challenge_id = s.challenge_id
-    JOIN Difficulty AS d ON d.difficulty_level = c.difficulty_level
-WHERE
-    s.score = d.score
-GROUP BY
-    h.hacker_id
-    ,h.name
-HAVING
-    COUNT(1) > 1
-ORDER BY
-    COUNT(1) DESC
-    ,h.hacker_id;
+/* 49. Top Competitors (Star) */
+SELECT h.hacker_id, h.name
+FROM Hackers h
+    INNER JOIN Submissions s USING(hacker_id)
+    INNER JOIN Challenges c USING(challenge_id)
+    INNER JOIN Difficulty d USING(difficulty_level)
+WHERE s.score = d.score
+GROUP BY h.hacker_id, h.name
+HAVING COUNT(1) > 1
+ORDER BY COUNT(1) DESC, h.hacker_id;
 /* Must use JOIN */
 
-/* 50. Ollivander's Inventory */
+/* 50. Ollivander's Inventory (Star) */
 SELECT w.id, p.age, w.coins_needed, w.power 
-FROM WANDs AS w JOIN WANDs_Property AS p 
-ON w.code = p.code
-WHERE p.is_evil = 0 
-AND w.coins_needed = (SELECT MIN(coins_needed) FROM WANDs AS w1 JOIN WANDs_Property AS p1 
-                      ON w1.code = p1.code WHERE w1.power = w.power AND p1.age = p.age) 
+FROM Wands w, Wands_Property p
+WHERE w.code = p.code
+AND p.is_evil = 0 
+AND w.coins_needed = (SELECT MIN(coins_needed) FROM Wands w1, Wands_Property p1 
+WHERE w1.code = p1.code AND w1.power = w.power AND p1.age = p.age) 
 ORDER BY w.power DESC, p.age DESC
 /* Using subquery to get min after GROUP BY */
 
-/* 51. Challenges */
-SELECT c.hacker_id, h.name, COUNT(c.hacker_id) AS c_count
-FROM Hackers h
-    INNER JOIN Challenges c 
-    ON c.hacker_id = h.hacker_id
-GROUP BY c.hacker_id, h.name
-HAVING
-    c_count = 
-        (SELECT MAX(temp1.cnt)
-        FROM (SELECT COUNT(hacker_id) AS cnt
-             FROM Challenges
-             GROUP BY hacker_id) temp1)
-    OR c_count IN
-        (SELECT t.cnt
-         FROM (SELECT COUNT(*) AS cnt 
-               FROM challenges
-               GROUP BY hacker_id) t
-         GROUP BY t.cnt
-         HAVING count(t.cnt) = 1)
-ORDER BY c_count DESC, c.hacker_id;
+/* 51. Challenges (Star) */
+SELECT h.hacker_id, h.name, COUNT(c.hacker_id) AS c_count
+FROM Hackers h, Challenges c 
+WHERE h.hacker_id = c.hacker_id
+GROUP BY h.hacker_id, h.name
+HAVING c_count = (SELECT MAX(t1.cnt) FROM (SELECT COUNT(*) AS cnt FROM Challenges GROUP BY hacker_id) t1)
+OR c_count IN (SELECT t2.cnt FROM (SELECT COUNT(*) AS cnt FROM Challenges GROUP BY hacker_id) t2 GROUP BY t2.cnt HAVING COUNT(t2.cnt) = 1)
+ORDER BY 3 DESC, 1;
 
 /* 52. Contest Leaderboard */
 SELECT h.hacker_id, name, SUM(m_score) AS s_score
@@ -385,9 +363,8 @@ ORDER BY s_score DESC, hacker_id;
 
 /* 53. Projects */
 SELECT Start_Date, MIN(End_Date)
-FROM 
-    (SELECT Start_Date FROM Projects WHERE Start_Date NOT IN (SELECT End_Date FROM Projects)) a,
-    (SELECT End_Date FROM Projects WHERE End_Date NOT IN (SELECT Start_Date FROM Projects)) b 
+FROM (SELECT Start_Date FROM Projects WHERE Start_Date NOT IN (SELECT End_Date FROM Projects)) a,
+(SELECT End_Date FROM Projects WHERE End_Date NOT IN (SELECT Start_Date FROM Projects)) b 
 WHERE Start_Date < End_Date
 GROUP BY Start_Date 
 ORDER BY DATEDIFF(MIN(End_Date), Start_Date), Start_Date;
@@ -469,4 +446,3 @@ GROUP BY hacker_id ORDER BY count(submission_id) DESC , hacker_id LIMIT 1) AS sh
 (SELECT name FROM hackers WHERE hacker_id = shit)
 FROM 
 (SELECT DISTINCT submission_date FROM submissions) s1;
-
