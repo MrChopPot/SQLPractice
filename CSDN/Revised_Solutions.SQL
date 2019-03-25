@@ -234,41 +234,42 @@ FROM SC LEFT JOIN
 (SELECT SID, Round(Avg(Score), 1) AS Avg_Score FROM SC GROUP BY 1) AS t
 ON SC.SID = t.SID
 ORDER BY 1, 4 DESC;
+/* Also can be done with Window Functions */
 
 
 /*18.Query for all kinds of rate (version 1)*/
 
-SELECT SC.CID, Count(*) AS ClassSize, 
-Max(SC.Score) AS Max, Min(SC.Score) AS Min, Round(Avg(SC.Score), 1) AS AvgS,
-Round(Cast(Sum(CASE WHEN SC.Score >= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS PassRate,  
-Round(Cast(Sum(CASE WHEN SC.Score BETWEEN 70 AND 79 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS MediumRate,
-Round(Cast(Sum(CASE WHEN SC.Score BETWEEN 80 AND 89 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS GoodRate,
-Round(Cast(Sum(CASE WHEN SC.Score >= 90 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ExcellentRate
+SELECT CID, Count(*) AS ClassSize, 
+Max(Score) AS Max, Min(Score) AS Min, Round(Avg(Score), 1) AS AvgS,
+Round(Cast(Sum(CASE WHEN Score >= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS DRate,  
+Round(Cast(Sum(CASE WHEN Score BETWEEN 70 AND 79 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS CRate,
+Round(Cast(Sum(CASE WHEN Score BETWEEN 80 AND 89 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS BRate,
+Round(Cast(Sum(CASE WHEN Score >= 90 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ARate
 FROM SC
 GROUP BY 1
-ORDER BY 1 ASC;
+ORDER BY 2 DESC, 1;
 
 
 /*19. Order by score of each course, giving the rank, which remains when two scores are equal*/
 
-SELECT SC.CID, SC.SID, SC.Score, t.Rank
-FROM SC LEFT JOIN (SELECT SID, CID, (SELECT COUNT(*) + 1 
-FROM SC t2 WHERE t2.Score > t1.Score AND t2.CID = t1.CID)
-AS Rank FROM SC t1) t
+SELECT SC.CID, SC.SID, SC.Score, Rank
+FROM SC LEFT JOIN (SELECT SID, CID, (SELECT COUNT(S2.Score) + 1
+FROM SC S2 WHERE S2.CID = S1.CID AND S2.Score > S1.Score) AS Rank
+FROM SC S1) t
 ON SC.SID = t.SID
 AND SC.CID = t.CID
-ORDER BY 1, 3 DESC;
+ORDER BY 1, 4;
 
 
 /*20. Order by score of each course, giving the rank, which merges when two scores are equal*/
 
-SELECT SC.CID, SC.SID, SC.Score, t.Rank
-FROM SC LEFT JOIN (SELECT SID, CID, (SELECT COUNT(DISTINCT t2.Score) + 1 
-FROM SC t2 WHERE t2.Score > t1.Score AND t2.CID = t1.CID)
-AS Rank FROM SC t1) t
+SELECT SC.CID, SC.SID, SC.Score, Rank
+FROM SC LEFT JOIN (SELECT SID, CID, (SELECT COUNT(DISTINCT S2.Score) + 1
+FROM SC S2 WHERE S2.CID = S1.CID AND S2.Score > S1.Score) AS Rank
+FROM SC S1) t
 ON SC.SID = t.SID
 AND SC.CID = t.CID
-ORDER BY 1, 3 DESC;
+ORDER BY 1, 4;
 
 
 /*21.Query student's total scores, ranking and remaining when two scores are equal*/
@@ -297,14 +298,14 @@ ORDER BY Rank;
 /*23.Query for all kinds of rate (version 2)*/
 
 SELECT Course.CID, CName,
-Round(Cast(Sum(CASE WHEN Score <= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS FailRate,  
-Round(Cast(Sum(CASE WHEN Score BETWEEN 60 AND 69 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS MediumRate,
-Round(Cast(Sum(CASE WHEN Score BETWEEN 70 AND 84 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS GoodRate,
-Round(Cast(Sum(CASE WHEN Score >= 85 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ExcellentRate
+Round(Cast(Sum(CASE WHEN Score <= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS FRate,  
+Round(Cast(Sum(CASE WHEN Score BETWEEN 60 AND 69 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS MRate,
+Round(Cast(Sum(CASE WHEN Score BETWEEN 70 AND 84 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS GRate,
+Round(Cast(Sum(CASE WHEN Score >= 85 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ERate
 FROM SC, Course
 WHERE Course.CID = SC.CID
 GROUP BY 1
-ORDER BY 1 ASC;
+ORDER BY 1;
 
 
 /*24.Query top 3 for each course*/
