@@ -190,9 +190,9 @@ AND Course.CID = SC.CID AND TName = '张三');
 /* Solution2 (w/ EXISTS)*/
 SELECT SName
 FROM Student
-WHERE NOT EXISTS (SELECT SC.SID
+WHERE NOT EXISTS (SELECT SID
 FROM Course, Teacher, SC
-WHERE Teacher.TName = '张三'
+WHERE TName = '张三'
 AND Course.TID = Teacher.TID
 AND SC.CID = Course.CID
 AND Student.SID = SC.SID)
@@ -458,9 +458,10 @@ WHERE Student.SID = t1.SID
 AND t1.CID = Course.CID
 AND Course.TID = Teacher.TID
 AND TName = '张三'
-AND (SELECT Count(*) FROM SC t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) = 0;
-/* Or AND t1.Score = (SELECT MAX(Score) FROM SC AS t2 WHERE t1.CID = t2.CID) */
+AND t1.Score = (SELECT MAX(Score) FROM SC t2 WHERE t1.CID = t2.CID);
+/* Or AND (SELECT Count(*) FROM SC t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) = 0 */
 
+                     
 /*41.Query student's SID, CID and Score if ones have same score for different courses*/
 
 /*Solution1 (w/ JOIN)*/
@@ -482,26 +483,26 @@ GROUP BY 1, 2;
 
 /*42.Query top 2 for each course*/
 
-SELECT *
-FROM SC AS t1
-WHERE (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 2
-ORDER BY t1.CID, t1.Score DESC;
+SELECT t1.CID, t1.SID, t1.Score
+FROM SC t1
+WHERE (SELECT COUNT(*) FROM SC t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 2
+ORDER BY 1, 3 DESC;
 
 
 /*43.Query class size for each course (at least 5)*/
 
-SELECT CID, CName, Count(*) AS ClassSize
+SELECT CID, CName, COUNT(*) AS ClassSize
 FROM SC, Course
 WHERE Course.CID = SC.CID
-GROUP BY SC.CID
+GROUP BY 1
 HAVING ClassSize >= 5;
 
 
 /*44.Query student's info if one takes more than two courses*/
 
-SELECT SID, Count(*) AS ClassNum
+SELECT SID, COUNT(*) AS ClassNum
 FROM SC
-GROUP BY SID
+GROUP BY 1
 HAVING ClassNum > 2;
 
 
@@ -511,12 +512,12 @@ SELECT Student.*
 FROM Student, SC
 WHERE Student.SID = SC.SID
 GROUP BY 1
-HAVING COUNT(*) = (SELECT Count(*) FROM Course);
+HAVING COUNT(*) = (SELECT COUNT(*) FROM Course);
 
 
 /*46-50.Time related problems*/
 
-SELECT Student.SName, (date('now') - SAge) AS Age
+SELECT SName, (Date('now') - SAge) AS Age
 FROM Student;
 
 SELECT *
