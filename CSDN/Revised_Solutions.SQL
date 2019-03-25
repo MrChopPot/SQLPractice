@@ -37,20 +37,20 @@ WHERE Student.SID = t1.SID;
 
 /*3.Query the cases that course 01 is included but course 02 MAY not (Null)*/
 
-SELECT Student.*, t1.Score AS Score01, t2.Score AS Score02
-FROM ((SELECT SID, Score FROM SC WHERE CID = '01') AS t1 
-LEFT JOIN (SELECT SID,Score FROM SC WHERE CID = '02') AS t2 
-ON t1.SID = t2.SID), Student
-WHERE Student.SID = t1.SID;
+SELECT Student.*, t.Score_01, t.Score_02
+FROM ((SELECT SID, Score AS Score_01 FROM SC WHERE CID = '01') t1 
+LEFT JOIN (SELECT SID, Score AS Score_02 FROM SC WHERE CID = '02') t2 
+ON t1.SID = t2.SID) t, Student
+WHERE t.SID = Student.SID;
 
 
-/*4.Query the case that course 02 is included but course 01 IS not*/
+/*4.Query the case that course 02 is included but course 01 is not*/
 
 /*Solution1 (w/ EXISTS)*/
 SELECT Student.*, Score
 FROM Student, SC
 WHERE NOT EXISTS (SELECT Score FROM SC 
-WHERE CID = '01' AND SC.SID = Student.SID)
+WHERE CID = '01' AND SID = Student.SID)
 AND Student.SID = SC.SID
 AND CID = '02';
 
@@ -62,13 +62,13 @@ AND CID = '02'
 AND SC.SID = Student.SID;
 
 
-/*5.Query student's id, name and score if one's average point is over 60*/
+/*5.Query student's id, name and score if one's average point is equal or over 60*/
 
 SELECT Student.SId, Student.SName, ROUND(AVG(Score), 1) AS Avg_Score
 FROM Student, SC
 WHERE Student.SID = SC.SID
 GROUP BY 1
-HAVING Avg_Score > 60;
+HAVING Avg_Score >= 60;
 
 
 /*6.Query student's info if one has records in SC*/
@@ -107,7 +107,7 @@ ON t.SID = Student.SID;
 
 
 /*9.Query the number of teachers whose last name is 李*/
-SELECT Count(*)
+SELECT "李" AS T_FamilyName, COUNT(*) AS Num
 FROM Teacher
 WHERE TName LIKE '李%';
 
@@ -138,6 +138,14 @@ WHERE SID NOT IN (SELECT SID FROM SC
 GROUP BY 1
 HAVING COUNT(*) = (SELECT COUNT(*) FROM Course));
 
+/*Solution3 (w/ EXISTS)*/
+SELECT *
+FROM Student
+WHERE NOT EXISTS (SELECT SID FROM SC
+WHERE SID = Student.SID
+GROUP BY 1
+HAVING COUNT(CID) = (SELECT COUNT(*) FROM Course))
+ 
 
 /*12.Query student's info if one has at least one same course with sid 01*/
 
