@@ -160,7 +160,7 @@ FROM Employees;
 SELECT (salary * months) AS earnings, COUNT(*) 
 FROM Employee 
 GROUP BY 1 
-ORDER BY earnings DESC 
+ORDER BY 1 DESC 
 LIMIT 1;
 /* What if there is more than 1 top earners? */
 SELECT salary * months AS earnings, COUNT(*)
@@ -181,8 +181,6 @@ WHERE LAT_N BETWEEN 38.788 AND 137.2345;
 SELECT TRUNCATE(MAX(LAT_N), 4)
 FROM STATION
 WHERE LAT_N < 137.2345;
-
-/* 31-32: RLIKE (MYSQL) & RegEx */
 
 /* 33. Weather Observation Station 15 */
 SELECT ROUND(LONG_W, 4)
@@ -283,9 +281,9 @@ WHERE c.company_code = l.company_code
 AND l.lead_manager_code = s.lead_manager_code 
 AND s.senior_manager_code = m.senior_manager_code 
 AND m.manager_code = e.manager_code 
-GROUP BY c.company_code /* omit c.founder here is ok*/
-ORDER BY c.company_code;
-/* Combined query w/o (INNER) JOIN */
+GROUP BY 1, 2
+ORDER BY 1;
+/* Mutiple Tables Combined query w/o (INNER) JOIN */
 
 /* 45. Weather Observation Station 18 */
 SELECT ROUND(ABS(MAX(LAT_N) - MIN(LAT_N)) + ABS(MAX(LONG_W) - MIN(LONG_W)), 4)
@@ -298,8 +296,8 @@ FROM STATION;
 /* POWER */
 
 /* 47. Weather Observation Station 20 (Star) */
-SELECT IF((SELECT MOD(COUNT(LAT_N),2) FROM STATION) = 0,
-(SELECT ROUND(S.LAT_N, 4) Median
+SELECT IF((SELECT MOD(COUNT(LAT_N), 2) FROM STATION) = 0,
+(SELECT ROUND(S.LAT_N, 4) AS Median
 FROM STATION S
 WHERE ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) + 1) =
       (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N)
@@ -307,18 +305,18 @@ WHERE ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) + 1) =
       (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) =
       ((SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N) + 1)
  ),
-(SELECT ROUND(S.LAT_N, 4) Median
+(SELECT ROUND(S.LAT_N, 4) AS Median
 FROM STATION S
 WHERE (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N > LAT_N) = 
       (SELECT COUNT(LAT_N) FROM STATION WHERE S.LAT_N < LAT_N)
          ));
 /* Find Median! */
 
-/* 48. The Report (Star) */
+/* 48. The Report */
 SELECT (CASE WHEN g.Grade >= 8 THEN s.Name ELSE NULL END), g.Grade, s.Marks 
 FROM Students s INNER JOIN Grades g 
 ON s.Marks BETWEEN Min_Mark AND Max_Mark 
-ORDER BY g.Grade DESC,s.Name, s.Marks;
+ORDER BY 2 DESC, 1, 3;
 /* Quick JOIN on other conditions: could also be done w/o JOIN */
 
 /* 49. Top Competitors (Star) */
@@ -328,9 +326,9 @@ FROM Hackers h
     INNER JOIN Challenges c USING(challenge_id)
     INNER JOIN Difficulty d USING(difficulty_level)
 WHERE s.score = d.score
-GROUP BY h.hacker_id, h.name
+GROUP BY 1, 2
 HAVING COUNT(1) > 1
-ORDER BY COUNT(1) DESC, h.hacker_id;
+ORDER BY COUNT(1) DESC, 1;
 /* Must use JOIN */
 
 /* 50. Ollivander's Inventory (Star) */
@@ -340,34 +338,49 @@ WHERE w.code = p.code
 AND p.is_evil = 0 
 AND w.coins_needed = (SELECT MIN(coins_needed) FROM Wands w1, Wands_Property p1 
 WHERE w1.code = p1.code AND w1.power = w.power AND p1.age = p.age) 
-ORDER BY w.power DESC, p.age DESC
+ORDER BY 4 DESC, 2 DESC
 /* Using subquery to get min after GROUP BY */
 
 /* 51. Challenges (Star) */
-SELECT h.hacker_id, h.name, COUNT(c.hacker_id) AS c_count
+SELECT h.hacker_id, h.name, COUNT(1) AS c_count
 FROM Hackers h, Challenges c 
 WHERE h.hacker_id = c.hacker_id
-GROUP BY h.hacker_id, h.name
-HAVING c_count = (SELECT MAX(t1.cnt) FROM (SELECT COUNT(*) AS cnt FROM Challenges GROUP BY hacker_id) t1)
-OR c_count IN (SELECT t2.cnt FROM (SELECT COUNT(*) AS cnt FROM Challenges GROUP BY hacker_id) t2 GROUP BY t2.cnt HAVING COUNT(t2.cnt) = 1)
+GROUP BY 1, 2
+HAVING c_count = (SELECT MAX(cnt1) 
+  FROM (SELECT COUNT(*) AS cnt1 
+    FROM Challenges c1 
+    GROUP BY hacker_id) t1)
+OR c_count IN (SELECT cnt2 
+  FROM (SELECT COUNT(*) AS cnt2 
+    FROM Challenges c2
+    GROUP BY hacker_id) t2 
+  GROUP BY cnt2
+  HAVING COUNT(cnt2) = 1)
 ORDER BY 3 DESC, 1;
 
 /* 52. Contest Leaderboard */
 SELECT h.hacker_id, name, SUM(m_score) AS s_score
 FROM Hackers h INNER JOIN 
-(SELECT hacker_id, MAX(score) AS m_score FROM Submissions GROUP BY challenge_id, hacker_id) m
+(SELECT hacker_id, MAX(score) AS m_score 
+  FROM Submissions GROUP BY challenge_id, hacker_id) m
 USING(hacker_id)
-GROUP BY h.hacker_id, name
+GROUP BY 1, 2
 HAVING s_score > 0
-ORDER BY s_score DESC, hacker_id;
+ORDER BY 3 DESC, 1;
 
 /* 53. Projects */
 SELECT Start_Date, MIN(End_Date)
-FROM (SELECT Start_Date FROM Projects WHERE Start_Date NOT IN (SELECT End_Date FROM Projects)) a,
-(SELECT End_Date FROM Projects WHERE End_Date NOT IN (SELECT Start_Date FROM Projects)) b 
+FROM (SELECT Start_Date 
+  FROM Projects 
+  WHERE Start_Date NOT IN 
+  (SELECT End_Date FROM Projects)) t1,
+(SELECT End_Date 
+  FROM Projects 
+  WHERE End_Date NOT IN 
+  (SELECT Start_Date FROM Projects)) t2 
 WHERE Start_Date < End_Date
-GROUP BY Start_Date 
-ORDER BY DATEDIFF(MIN(End_Date), Start_Date), Start_Date;
+GROUP BY 1
+ORDER BY DATEDIFF(MIN(End_Date), Start_Date), 1;
 
 /* 54. Placements */
 SELECT S.Name
@@ -386,8 +399,9 @@ WHERE f2.y = f1.x AND f2.x = f1.y AND f2.x > f1.x) AND (x != y)
 UNION
 SELECT x, y FROM functions f1 
 WHERE ((SELECT COUNT(*) FROM functions 
-WHERE x = f1.x AND y = f1.x) > 1) AND x = y
+WHERE x = f1.x AND y = f1.x) > 1) AND (x = y)
 ORDER BY x;
+/* UNION & UNION ALL still have their places */
 
 /* 56. Print Prime Numbers (Star) */
 SELECT GROUP_CONCAT(NUMB SEPARATOR '&')
