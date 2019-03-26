@@ -192,25 +192,25 @@ HAVING COUNT(*) = (SELECT MAX(COUNT(*)) FROM Vote GROUP BY Candidateid));
 SELECT question_id as survey_log
 FROM
 (SELECT question_id,
-        SUM(case when action="answer" THEN 1 ELSE 0 END) as num_answer,
-        SUM(case when action="show" THEN 1 ELSE 0 END) as num_show,    
+        SUM(case when action = "answer" THEN 1 ELSE 0 END) as num_answer,
+        SUM(case when action = "show" THEN 1 ELSE 0 END) as num_show,    
     FROM survey_log
-    GROUP BY question_id) as tbl
+    GROUP BY 1) as tbl
 ORDER BY (num_answer / num_show) DESC
 LIMIT 1;
 /* Solution 2 */
-SELECT question_id AS 'survey_log'
+SELECT question_id AS survey_log
 FROM survey_log
-GROUP BY question_id
-ORDER BY COUNT(answer_id) / COUNT(IF(action = 'show', 1, 0)) DESC
+GROUP BY 1
+ORDER BY COUNT(answer_id) / COUNT(IF(action = "show", 1, 0)) DESC
 LIMIT 1;
 
 /* 38. Count Student Number in Departments */
 SELECT dept_name, COUNT(student_id) AS student_number
 FROM department d LEFT JOIN student s
-ON d.dept_id = s.dept_id
-GROUP BY d.dept_name
-ORDER BY student_number DESC , d.dept_name;
+USING(dept_id)
+GROUP BY 1
+ORDER BY 2 DESC , 1;
 
 /* 39. Investments in 2016 */
 SELECT SUM(insurance.TIV_2016) AS TIV_2016
@@ -228,7 +228,7 @@ FROM (SELECT id, COUNT(*) AS num FROM
     UNION ALL 
     SELECT accepter_id AS id FROM request_accepted) idTable
 GROUP BY id, num) tempTable
-ORDER BY num DESC
+ORDER BY 2 DESC
 LIMIT 1;
 /* Here exists an assumption that only one top */
 
@@ -238,7 +238,7 @@ WHEN IS NULL THEN 'Root'
 WHEN t.id IN (SELECT p_id FROM tree) THEN 'Inner'
 ELSE 'Leaf' END) AS Type
 FROM tree t
-ORDER BY t.id；
+ORDER BY 1；
 
 /* 42. Shortest Distance in a Plane */
 SELECT ROUND(SQRT(MIN((POW(p1.x - p2.x, 2) + POW(p1.y - p2.y, 2)))),2) AS shortest
@@ -251,15 +251,15 @@ OR (p1.x < p2.x AND p1.y = p2.y);
 SELECT f1.follower, COUNT(DISTINCT f2.follower) AS num 
 FROM follow f1 INNER JOIN follow f2 
 ON f1.follower = f2.followee
-GROUP BY f1.follower 
-ORDER BY f1.follower;
+GROUP BY 1 
+ORDER BY 1;
 
 /* 44. Exchange Seats */
 SELECT IF(id < (SELECT COUNT(*) FROM seat), 
     IF(id % 2 = 0, id - 1, id + 1), 
     IF(id % 2 = 0, id - 1, id)) AS id, student
 FROM seat
-ORDER BY id;
+ORDER BY 1;
 /* Pay attention to the IFs */
 
 
@@ -274,7 +274,7 @@ WHERE (SELECT COUNT(DISTINCT e2.Salary)
                   FROM Employee e2 
                   WHERE e2.Salary > e1.Salary 
                   AND e1.DepartmentId = e2.DepartmentId) < 3 /* N */
-ORDER BY e1.DepartmentId, e1.Salary DESC;
+ORDER BY e1.DepartmentId, 3 DESC;
 /* Classic method to get the top N of each group */
 
 /* 46. Trips and Users */
@@ -295,7 +295,7 @@ WHERE e1.Company = e2.Company
 GROUP BY e1.Company, e1.Salary
 HAVING SUM(CASE WHEN e1.Salary = e2.Salary THEN 1 
     ELSE 0 END) >= ABS(SUM(SIGN(e1.Salary - e2.Salary)))
-ORDER BY e1.Id;
+ORDER BY 1;
 /* Find median! SIGN: 1 if >0, 0 if 0, -1 if <0 */
 
 /* 48. Find Median Given Frequency of Numbers (Star) */
@@ -320,10 +320,11 @@ FROM (SELECT id, MAX(month) AS month FROM Employee GROUP BY id
         LEFT JOIN
     Employee E3 ON (E3.id = E1.id
         AND E3.month = E1.month - 2)
-ORDER BY id, month DESC;
+ORDER BY 1, 2 DESC;
 
 /* 50. Human Traffic of Stadium */
-SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium AS s3
+SELECT s1.* 
+FROM stadium AS s1, stadium AS s2, stadium AS s3
  WHERE 
  ((s1.id + 1 = s2.id
  AND s1.id + 2 = s3.id)
@@ -332,16 +333,15 @@ SELECT s1.* FROM stadium AS s1, stadium AS s2, stadium AS s3
  AND s1.id + 1 = s3.id)
  OR
  (s1.id - 2 = s2.id
- AND s1.id - 1 = s3.id)
- )
+ AND s1.id - 1 = s3.id))
  AND s1.people >= 100 
  AND s2.people >= 100
  AND s3.people >= 100
 GROUP BY s1.id;
 /* Output all the info that meets the requirement (So not only s1.id) */
 
-/* 51. Average Salary: Departments VS Company (Star) */
-SELECT ds.pay_month, department_id,
+/* 51. Average Salary: Departments VS Company */
+SELECT pay_month, department_id,
 CASE
   WHEN department_avg > company_avg THEN 'higher'
   WHEN department_avg < company_avg THEN 'lower'
@@ -359,7 +359,7 @@ INNER JOIN
   FROM salary 
   GROUP BY 1
 ) AS cs
-ON ds.pay_month = cs.pay_month;
+USING(pay_month);
 /* DATE_FORMAT gets the month, complex JOIN */
 
 /* 52. Students Report By Geography (Star) */
