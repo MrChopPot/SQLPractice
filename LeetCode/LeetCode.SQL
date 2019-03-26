@@ -4,7 +4,8 @@
 SELECT FirstName, LastName, City, State
 FROM Person
 LEFT JOIN Address
-ON Address.PersonId = Person.PersonId;
+USING(PersonId);
+/* https://stackoverflow.com/questions/11366006/mysql-on-vs-using */
 
 /* 2. Second Highest Salary */
 SELECT MAX(Salary) AS SecondHighestSalary
@@ -28,7 +29,7 @@ AND p1.Id < p2.Id;
 SELECT FirstName, LastName, City, State
 FROM Person
 LEFT JOIN Address
-ON Address.PersonId = Person.PersonId;
+USING(PersonId);
 
 /* 6. Delete Duplicate Emails */
 DELETE p1
@@ -46,7 +47,7 @@ AND w1.Temperature > w2.Temperature;
 /* 8. Employee Bonus */
 SELECT name, bonus
 FROM Employee e LEFT JOIN Bonus b
-ON e.empid = b.empid
+USING(empid)
 WHERE bonus < 1000 OR bonus IS NULL;
 
 /* 9. Find Customer Referee */
@@ -87,15 +88,17 @@ FROM cinema c1 INNER JOIN cinema c2
 ON ABS(c1.seat_id - c2.seat_id) = 1
 AND c1.free = 1
 AND c2.free = 1
-ORDER BY a.seat_id;
+ORDER BY 1;
 /* JOIN ON other conditions, could also be done w/o JOIN; 1 for True */
 
 /* 15. Sales Person */
-SELECT s.name
+SELECT name
 FROM salesperson s
 WHERE s.sales_id NOT IN
-(SELECT o.sales_id FROM orders o, company c 
-WHERE o.com_id = c.com_id AND c.name = 'RED');
+(SELECT o.sales_id 
+    FROM orders o, company c 
+    WHERE o.com_id = c.com_id 
+    AND c.name = 'RED');
 
 /* 16. Triangle Judgement */
 SELECT *, IF(x + y > z AND x + z > y AND y + z > x, 
@@ -111,8 +114,8 @@ ON p1.x != p2.x;
 /* 18. Biggest Single Numbe */
 SELECT MAX(num) AS num
 FROM (SELECT num FROM number 
-    GROUP BY num
-    HAVING COUNT(num) = 1) AS t;
+    GROUP BY 1
+    HAVING COUNT(1) = 1) AS t;
 
 /* 19. Not Boring Movies */
 SELECT *
@@ -124,7 +127,8 @@ ORDER BY rating DESC；
 /* 20. Swap Salary */
 UPDATE salary
 SET sex = CASE sex 
-WHEN 'm' THEN 'f' ELSE 'm' END;
+WHEN 'm' THEN 'f' 
+ELSE 'm' END;
 /* Good use of SET & CASE */
 
 
@@ -144,13 +148,15 @@ SELECT s1.Score, COUNT(DISTINCT s2.Score) AS Rank
 FROM Scores s1, (SELECT Score FROM Scores) s2
 WHERE s1.Score <= s2.Score
 GROUP BY s1.Id, s1.Score
-ORDER BY s1.Score DESC;
+ORDER BY 1 DESC;
 
 /* 33. Consecutive Numbers */
 SELECT DISTINCT l1.Num AS ConsecutiveNums 
 FROM Logs l1, Logs l2, Logs l3 
-where l1.Id = l2.Id-1 and l2.Id = l3.Id-1 
-and l1.Num = l2.Num and l2.Num = l3.Num;
+WHERE l1.Id = l2.Id-1 
+AND l2.Id = l3.Id-1 
+AND l1.Num = l2.Num 
+AND l2.Num = l3.Num;
 /* This just need the total number, so the solution could be simple */
 
 /* 34. Department Highest Salary */
@@ -163,9 +169,11 @@ AND Salary = t.max;
 
 /* 35. Managers with at Least 5 Direct Reports */
 SELECT Name
-FROM Employee AS t1 JOIN
-(SELECT ManagerId FROM Employee GROUP BY ManagerId 
-    HAVING COUNT(ManagerId) >= 5) AS t2
+FROM Employee t1 INNER JOIN
+(SELECT ManagerId 
+    FROM Employee 
+    GROUP BY ManagerId 
+    HAVING COUNT(ManagerId) >= 5) t2
 ON t1.Id = t2.ManagerId;
 
 /* 36. Winning Candidate */
