@@ -1,4 +1,4 @@
-# Welcome, My Friends!
+# Welcome, Friends!
 
 You can find my solutions for **3 sets of SQL Questions** in this folder: 
 
@@ -8,6 +8,6 @@ You can find my solutions for **3 sets of SQL Questions** in this folder:
 
 I used SQLite for CSDN questions, MySQL & MS SQL for the other 2 sets.
 
-### Hope you enjoy! And welcome to any commment!
+### Hope you enjoy! And welcome to any fork!
 
 Please don't forget to click the `Star`! Thank you!
