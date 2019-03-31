@@ -64,7 +64,7 @@ AND SC.SID = Student.SID;
 
 /*5.Query student's id, name and score if one's average point is equal or over 60*/
 
-SELECT Student.SId, Student.SName, ROUND(AVG(Score), 1) AS Avg_Score
+SELECT Student.SID, Student.SName, ROUND(AVG(Score), 1) AS Avg_Score
 FROM Student, SC
 WHERE Student.SID = SC.SID
 GROUP BY 1
@@ -90,7 +90,7 @@ FROM Student, SC
 WHERE Student.SID = SC.SID;
 
 
-/*7.Query all students' IDs, names, amounts of courses and sums of scores (Null)*/
+/*7.Query all students' IDs, names, amounts of courses and SUMs of scores (Null)*/
 
 SELECT Student.SID, Student.SName, t.Course_Num, t.Total_Score
 FROM Student LEFT JOIN 
@@ -107,7 +107,7 @@ ON t.SID = Student.SID;
 
 
 /*9.Query the number of teachers whose last name is 李*/
-SELECT "李" AS T_FamilyName, COUNT(*) AS Num
+SELECT "李" AS T_LastName, COUNT(*) AS Num
 FROM Teacher
 WHERE TName LIKE '李%';
 
@@ -174,7 +174,7 @@ WHERE SC.CID IN (SELECT CID FROM SC WHERE SID = '01')
 AND Student.SID != '01'
 AND Student.SID = SC.SID
 GROUP BY 1
-HAVING Count(*) = (SELECT Count(*) FROM SC WHERE SID = '01');
+HAVING COUNT(*) = (SELECT COUNT(*) FROM SC WHERE SID = '01');
 /* This logic is tricky: all the cid are in the set of 01's cids and equal cnts */
 
 
@@ -195,7 +195,7 @@ FROM Course, Teacher, SC
 WHERE TName = '张三'
 AND Course.TID = Teacher.TID
 AND SC.CID = Course.CID
-AND Student.SID = SC.SID)
+AND Student.SID = SC.SID);
 
 
 /*15.Query student's IDs, names and average score if one failed at least twice*/
@@ -208,12 +208,12 @@ GROUP BY 1
 HAVING SUM(CASE WHEN Score < 60 THEN 1 ELSE 0 END) >= 2;
 
 /*Solution2 (w/o CASE)*/
-SELECT SC.SID, SName, Round(Avg(Score),1) AS AvgS
+SELECT SC.SID, SName, Round(AVG(Score),1) AS AvgS
 FROM Student, SC
 WHERE SC.SID = Student.SID
 AND Score < 60
 GROUP BY 1
-HAVING Count(*) >= 2;
+HAVING COUNT(*) >= 2;
 
 
 /*16.Query student's info if one failed course 01, descending the score*/
@@ -223,7 +223,7 @@ FROM Student, SC
 WHERE Score < 60
 AND CID = '01'
 AND Student.SID = SC.SID
-GROUP BY SC.SID
+GROUP BY 1
 ORDER BY Score DESC;
 
 
@@ -231,7 +231,7 @@ ORDER BY Score DESC;
 
 SELECT SC.*, t.Avg_Score
 FROM SC LEFT JOIN
-(SELECT SID, Round(Avg(Score), 1) AS Avg_Score FROM SC GROUP BY 1) AS t
+(SELECT SID, Round(AVG(Score), 1) AS Avg_Score FROM SC GROUP BY 1) AS t
 ON SC.SID = t.SID
 ORDER BY 1, 4 DESC;
 /* Also can be done with Window Functions */
@@ -239,12 +239,12 @@ ORDER BY 1, 4 DESC;
 
 /*18.Query for all kinds of rate (version 1)*/
 
-SELECT CID, Count(*) AS ClassSize, 
-Max(Score) AS Max, Min(Score) AS Min, Round(Avg(Score), 1) AS AvgS,
-Round(Cast(Sum(CASE WHEN Score >= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS DRate,  
-Round(Cast(Sum(CASE WHEN Score BETWEEN 70 AND 79 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS CRate,
-Round(Cast(Sum(CASE WHEN Score BETWEEN 80 AND 89 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS BRate,
-Round(Cast(Sum(CASE WHEN Score >= 90 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ARate
+SELECT CID, COUNT(*) AS ClassSize, 
+MAX(Score) AS Max, MIN(Score) AS Min, Round(AVG(Score), 1) AS AvgS,
+Round(Cast(SUM(CASE WHEN Score >= 60 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS DRate,  
+Round(Cast(SUM(CASE WHEN Score BETWEEN 70 AND 79 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS CRate,
+Round(Cast(SUM(CASE WHEN Score BETWEEN 80 AND 89 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS BRate,
+Round(Cast(SUM(CASE WHEN Score >= 90 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS ARate
 FROM SC
 GROUP BY 1
 ORDER BY 2 DESC, 1;
@@ -275,10 +275,10 @@ ORDER BY 1, 4;
 /*21.Query student's total scores, ranking and remaining when two scores are equal*/
 
 SELECT t1.*, COUNT(t2.SID) AS Rank
-FROM (SELECT SID, SUM(Score) AS Sum_Score 
+FROM (SELECT SID, SUM(Score) AS SUM_Score 
 FROM SC GROUP BY 1) t1, (SELECT SID, SUM(Score) 
-AS Sum_Score FROM SC GROUP BY 1) t2
-WHERE t2.Sum_Score >= t1.Sum_Score
+AS SUM_Score FROM SC GROUP BY 1) t2
+WHERE t2.SUM_Score >= t1.SUM_Score
 GROUP BY 1
 ORDER BY Rank;
 
@@ -286,10 +286,10 @@ ORDER BY Rank;
 /*22.Query student's total scores, ranking and merging when two scores are equal*/
 
 SELECT t1.*, COUNT(DISTINCT t2.SID) AS Rank
-FROM (SELECT SID, SUM(Score) AS Sum_Score 
+FROM (SELECT SID, SUM(Score) AS SUM_Score 
 FROM SC GROUP BY 1) t1, (SELECT SID, SUM(Score) 
-AS Sum_Score FROM SC GROUP BY 1) t2
-WHERE t2.Sum_Score >= t1.Sum_Score
+AS SUM_Score FROM SC GROUP BY 1) t2
+WHERE t2.SUM_Score >= t1.SUM_Score
 GROUP BY 1
 ORDER BY Rank;
 
@@ -298,10 +298,10 @@ ORDER BY Rank;
 /*23.Query for all kinds of rate (version 2)*/
 
 SELECT Course.CID, CName,
-Round(Cast(Sum(CASE WHEN Score <= 60 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS FRate,  
-Round(Cast(Sum(CASE WHEN Score BETWEEN 60 AND 69 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS MRate,
-Round(Cast(Sum(CASE WHEN Score BETWEEN 70 AND 84 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS GRate,
-Round(Cast(Sum(CASE WHEN Score >= 85 THEN 1 ELSE 0 END) AS Float) / Count(*), 2) AS ERate
+Round(Cast(SUM(CASE WHEN Score <= 60 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS FRate,  
+Round(Cast(SUM(CASE WHEN Score BETWEEN 60 AND 69 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS MRate,
+Round(Cast(SUM(CASE WHEN Score BETWEEN 70 AND 84 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS GRate,
+Round(Cast(SUM(CASE WHEN Score >= 85 THEN 1 ELSE 0 END) AS Float) / COUNT(*), 2) AS ERate
 FROM SC, Course
 WHERE Course.CID = SC.CID
 GROUP BY 1
@@ -312,13 +312,13 @@ ORDER BY 1;
 
 SELECT CID, SID, Score
 FROM SC AS t1
-WHERE (SELECT Count(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 3
+WHERE (SELECT COUNT(*) FROM SC AS t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) < 3
 ORDER BY 1, 3 DESC;
 
 
 /*25.Query the class size for each course*/
 
-SELECT CName, Count(*) AS ClassSize
+SELECT CName, COUNT(*) AS ClassSize
 FROM Course, SC
 WHERE Course.CID = SC.CID
 GROUP BY 1;
@@ -330,20 +330,20 @@ SELECT SID, SName
 FROM Student, SC
 WHERE Student.SID = SC.SID
 GROUP BY 1
-HAVING Count(*) = 2;
+HAVING COUNT(*) = 2;
 
 
 /*27.Query numbers of male and female*/
 
 /*Solution1 (w/ CASE)*/
-SELECT SUM(CASE WHEN SSEX ='男' THEN 1 ELSE 0 END) AS Count_Male,
-SUM(CASE WHEN SSEX ='女' THEN 1 ELSE 0 END) AS Count_Female
+SELECT SUM(CASE WHEN SSEX ='男' THEN 1 ELSE 0 END) AS COUNT_Male,
+SUM(CASE WHEN SSEX ='女' THEN 1 ELSE 0 END) AS COUNT_Female
 FROM Student;
 
 /*Solution2 (w/o CASE)*/
 SELECT SSex, COUNT(*)
 FROM Student
-GROUP BY SSex;
+GROUP BY 1;
 
 
 /*28.Query student's info if one's name contain 风*/
@@ -353,7 +353,7 @@ FROM Student
 WHERE SName LIKE '%风%';
 
 
-/*29.Query student's info if one has counterparts with the same name*/
+/*29.Query student's info if one has COUNTerparts with the same name*/
 
 SELECT *
 FROM Student LEFT JOIN (SELECT SName, COUNT(*) AS Num 
@@ -400,7 +400,7 @@ AND Score < 60;
 
 SELECT SName, CID, Score
 FROM Student LEFT JOIN SC
-ON Student.SID = SC.SID;
+USING(SID);
 
 
 /*35.Query its course name, student name and score if any score higher than 70 */
@@ -414,7 +414,7 @@ AND Student.SID = SC.SID;
 
 /*36.Query failed courses*/
 
-SELECT DISTINCT CID, CName, Count(Score) AS Num
+SELECT DISTINCT CID, CName, COUNT(Score) AS Num
 FROM Course, SC
 WHERE Course.CID = SC.CID
 AND SC.Score < 60
@@ -432,9 +432,16 @@ AND SC.Score >= 80;
 
 /*38.Query class size for each course*/
 
-SELECT CID, CName, Count(*) AS ClassSize
+/*Solution1 (w/o JOIN)*/
+SELECT CID, CName, COUNT(*) AS ClassSize
 FROM SC, Course
-WHERE Course.CID = SC.CID
+WHERE SC.CID = Course.CID
+GROUP BY 1;
+
+/*Solution2 (w/ JOIN)*/
+SELECT CID, CName, COUNT(*) AS ClassSize
+FROM SC INNER JOIN Course
+USING(CID)
 GROUP BY 1;
 
 
@@ -450,7 +457,7 @@ ORDER BY Score DESC
 LIMIT 1;
 
 
-/*40.Query top 1 student's info and score in course taught by 张三 (included equal scores)*/
+/*40.Query top 1 student's info and score in courses taught by 张三 (included equal scores)*/
 
 SELECT Student.*, t1.Score
 FROM Student, Course, Teacher, SC t1
@@ -459,7 +466,7 @@ AND t1.CID = Course.CID
 AND Course.TID = Teacher.TID
 AND TName = '张三'
 AND t1.Score = (SELECT MAX(Score) FROM SC t2 WHERE t1.CID = t2.CID);
-/* Or AND (SELECT Count(*) FROM SC t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) = 0 */
+/* Or AND (SELECT COUNT(*) FROM SC t2 WHERE t1.CID = t2.CID AND t2.Score > t1.Score) = 0 */
 
                      
 /*41.Query student's SID, CID and Score if ones have same score for different courses*/
@@ -500,8 +507,9 @@ HAVING ClassSize >= 5;
 
 /*44.Query student's info if one takes more than two courses*/
 
-SELECT SID, COUNT(*) AS ClassNum
-FROM SC
+SELECT Student.*, COUNT(*) AS ClassNum
+FROM Student, SC
+WHERE Student.SID = SC.SID
 GROUP BY 1
 HAVING ClassNum > 2;
 
@@ -522,7 +530,7 @@ FROM Student;
 
 SELECT *
 FROM Student
-WHERE Strftime('%W', 'Now') = Strftime('%W', SAge);
+WHERE Strftime('%W', Date('Now')) = Strftime('%W', SAge);
 
 SELECT *
 FROM Student
