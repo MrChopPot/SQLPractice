@@ -26,10 +26,9 @@ WHERE p1.Email = p2.Email
 AND p1.Id < p2.Id;
 
 /* 5. Customers Who Never Order */
-SELECT FirstName, LastName, City, State
-FROM Person
-LEFT JOIN Address
-USING(PersonId);
+SELECT Name AS Customers
+FROM Customers
+WHERE Id NOT IN (SELECT CustomerId FROM Orders);
 
 /* 6. Delete Duplicate Emails */
 DELETE p1
@@ -292,7 +291,7 @@ GROUP BY 1
 SELECT e1.Id, e1.Company, e1.Salary
 FROM Employee e1, Employee e2
 WHERE e1.Company = e2.Company
-GROUP BY e1.Company, e1.Salary
+GROUP BY 2, 3
 HAVING SUM(CASE WHEN e1.Salary = e2.Salary THEN 1 
     ELSE 0 END) >= ABS(SUM(SIGN(e1.Salary - e2.Salary)))
 ORDER BY 1;
