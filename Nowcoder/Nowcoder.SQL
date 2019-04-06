@@ -309,11 +309,209 @@ EXPLAIN SELECT * FROM employees
 /* 32.将employees表的所有员工的last_name和first_name拼接起来作为Name，
 中间以一个空格区分 */
 
+SELECT last_name || ' ' || first_name AS Name
+FROM employees
 
+/* 33 - 48 和SELECT无关 */
 
+/* 33.创建一个actor表，包含如下列信息 */
 
+CREATE TABLE actor
+(
+actor_id smallint(5) NOT NULL PRIMARY KEY,
+first_name varchar(45) NOT NULL,
+last_name varchar(45) NOT NULL,
+last_update timestamp NOT NULL DEFAULT (datetime('now','localtime'))
+)
 
+/* 34.对于表actor批量插入如下数据 */
 
+INSERT INTO actor
+VALUES (1, 'PENELOPE', 'GUINESS', '2006-02-15 12:34:33'),
+(2, 'NICK', 'WAHLBERG', '2006-02-15 12:34:33')
 
+/* 35.对于表actor批量插入如下数据,如果数据已经存在，请忽略，不使用replace操作 */
 
+INSERT IGNORE INTO actor
+VALUES(3,'ED','CHASE','2006-02-15 12:34:33')
 
+/* 36.创建一个actor_name表，将actor表中的所有first_name以及last_name导入改表 */
+
+CREATE TABLE actor_name AS
+SELECT first_name, last_name FROM actor
+
+/* 37.针对如下表actor结构创建索引 */
+
+CREATE UNIQUE INDEX uniq_idx_firstname ON actor(first_name);
+CREATE INDEX idx_lastname ON actor(last_name);
+
+/* 38.针对actor表创建视图actor_name_view，只包含first_name以及last_name两列，
+并对这两列重新命名，first_name为first_name_v，last_name修改为last_name_v */
+
+CREATE VIEW actor_name_view AS
+SELECT first_name AS first_name_v, last_name AS last_name_v
+FROM actor
+
+/* 39.针对salaries表emp_no字段创建索引idx_emp_no，
+查询emp_no为10005, 使用强制索引 */
+
+SELECT * 
+FROM salaries 
+INDEXED BY idx_emp_no 
+WHERE emp_no = 10005
+
+/* 40.现在在last_update后面新增加一列名字为create_date, 
+类型为datetime, NOT NULL，默认值为'0000 00:00:00' */
+
+ALTER TABLE actor 
+ADD COLUMN create_date datetime 
+NOT NULL DEFAULT '0000-00-00 00:00:00'
+
+/* 41.构造一个触发器audit_log，在向employees_test表中
+插入一条数据的时候，触发插入相关的数据到audit中 */
+
+CREATE TRIGGER audit_log AFTER INSERT ON employees_test
+BEGIN
+    INSERT INTO audit VALUES (NEW.ID, NEW.NAME);
+END;
+
+/* 42.删除emp_no重复的记录，只保留最小的id对应的记录 */
+
+DELETE FROM titles_test WHERE id NOT IN 
+(SELECT MIN(id) FROM titles_test GROUP BY emp_no)
+
+/* 43.将所有to_date为9999-01-01的全部更新为NULL,且 from_date更新为2001-01-01 */
+
+UPDATE titles_test 
+SET to_date = NULL, from_date = '2001-01-01'
+WHERE to_date = '9999-01-01'
+
+/* 44.将id=5以及emp_no=10001的行数据替换成id=5以及emp_no=10005，
+其他数据保持不变，使用replace实现 */
+
+REPLACE INTO titles_test 
+VALUES (5, 10005, 'Senior Engineer', '1986-06-26', '9999-01-01')
+
+/* 45.将titles_test表名修改为titles_2017 */
+
+ALTER TABLE titles_test RENAME TO titles_2017
+
+/* 46.在audit表上创建外键约束，其emp_no对应employees_test表的主键id */
+
+DROP TABLE audit;
+CREATE TABLE audit(
+    EMP_no INT NOT NULL,
+    create_date datetime NOT NULL,
+    FOREIGN KEY(EMP_no) REFERENCES employees_test(ID))
+
+/* 47.存在如下的视图：
+create view emp_v as select * from employees where emp_no >10005;
+如何获取emp_v和employees有相同的数据？ */
+
+SELECT em.* FROM employees AS em, emp_v AS ev WHERE em.emp_no = ev.emp_no
+
+/* 48.将所有获取奖金的员工当前的薪水增加10% */
+
+UPDATE salaries SET salary = salary * 1.1 WHERE emp_no IN
+(SELECT s.emp_no FROM salaries AS s INNER JOIN emp_bonus AS eb 
+ON s.emp_no = eb.emp_no AND s.to_date = '9999-01-01')
+
+/* 49.针对库中的所有表生成select count(*)对应的SQL语句 */
+
+SELECT "select count(*) from " || name || ";" AS cnts
+FROM sqlite_master WHERE type = 'table'
+
+/* 50.将employees表中的所有员工的last_name和first_name通过(')连接起来 */
+
+SELECT last_name || "'" || first_name FROM employees
+
+/* 51.查找字符串'10,A,B' 中逗号','出现的次数cnt */
+
+SELECT (length("10,A,B")-length(replace("10,A,B",",","")))/length(",") AS cnt
+
+/* 52.获取Employees中的first_name，查询按照first_name最后两个字母，
+按照升序进行排列 */
+
+SELECT first_name
+FROM employees
+ORDER BY SUBSTR(first_name, LENGTH(first_name) - 1) 
+
+/* 53.按照dept_no进行汇总，属于同一个部门的emp_no按照逗号进行连接，
+结果给出dept_no以及连接出的结果employees (Star) */
+
+SELECT dept_no, group_concat(emp_no) AS employees
+FROM dept_emp GROUP BY dept_no
+
+/* 54.查找排除当前最大、最小salary之后的员工的平均工资avg_salary */
+
+SELECT AVG(salary) AS avg_salary
+FROM salaries
+WHERE salary NOT IN
+(SELECT MAX(salary), MIN(salary) FROM salaries
+WHERE to_date = '9999-01-01')
+AND to_date = '9999-01-01'; -- Wrong one
+
+SELECT AVG(salary) AS avg_salary
+FROM salaries
+WHERE to_date = '9999-01-01'
+AND salary NOT IN (SELECT MAX(salary) FROM salaries 
+  WHERE to_date = '9999-01-01')
+AND salary NOT IN (SELECT MIN(salary) FROM salaries 
+  WHERE to_date = '9999-01-01') -- Right one
+
+/* 55.分页查询employees表，每5行一页，返回第2页的数据 */
+
+SELECT *
+FROM employees
+LIMIT 5, 5
+
+/* 56.获取所有员工的emp_no、部门编号dept_no以及对应的bonus类型
+btype和recevied，没有分配具体的员工不显示 */
+
+SELECT de.emp_no, de.dept_no, eb.btype, eb.recevied
+FROM dept_emp de LEFT JOIN emp_bonus eb 
+ON de.emp_no = eb.emp_no
+
+/* 57.使用含有关键字exists查找未分配具体部门的员工的所有信息 */
+
+SELECT *
+FROM employees e
+WHERE NOT EXISTS
+(SELECT d.emp_no FROM dept_emp d WHERE d.emp_no = e.emp_no)
+
+/* 58.获取employees中的行数据，且这些行也存在于emp_v中；不能使用intersect关键字 */
+
+SELECT * FROM emp_v
+
+/* 59.给出emp_no、first_name、last_name、奖金类型btype、对应的当前薪水情况salary
+以及奖金金额bonus；bonus类型btype为1其奖金为薪水salary的10%，
+btype为2其奖金为薪水的20%，其他类型均为薪水的30%；
+当前薪水表示to_date='9999-01-01' */
+
+SELECT e.emp_no, first_name, last_name, btype, salary, 
+(CASE btype WHEN 1 THEN 0.1 * salary 
+WHEN 2 THEN 0.2 * salary ELSE 0.3 * salary END) AS bonus
+FROM emp_bonus b, salaries s, employees e
+WHERE b.emp_no = s.emp_no
+AND s.emp_no = e.emp_no
+AND s.to_date = '9999-01-01'
+
+/* 60.按照salary的累计和running_total，其中running_total为
+前两个员工的salary累计和，其他以此类推 */
+
+SELECT s1.emp_no, s1.salary, 
+(SELECT SUM(s2.salary) 
+ FROM salaries s2 WHERE s2.emp_no <= s1.emp_no 
+ AND s2.to_date = '9999-01-01') AS running_total 
+FROM salaries s1 
+WHERE s1.to_date = '9999-01-01' 
+ORDER BY 1
+
+/* 61.对于employees表中，给出奇数行的first_name */
+
+SELECT e1.first_name FROM 
+  (SELECT e2.first_name, 
+    (SELECT COUNT(*) FROM employees AS e3 
+     WHERE e3.first_name <= e2.first_name) 
+   AS rowid FROM employees AS e2) AS e1
+WHERE e1.rowid % 2 = 1
