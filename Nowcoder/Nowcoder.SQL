@@ -183,3 +183,137 @@ INNER JOIN
 ON t1.emp_no = t2.emp_no
 ORDER BY 2
 
+/* 22.统计各个部门对应员工涨幅的次数总和，给出部门编码dept_no、
+部门名称dept_name以及次数sum */
+
+SELECT d.dept_no, d.dept_name, COUNT(salary) AS sum
+FROM departments d, dept_emp e, salaries s
+WHERE d.dept_no = e.dept_no
+AND e.emp_no = s.emp_no
+GROUP BY 1
+
+/* 23.对所有员工的当前(to_date='9999-01-01')薪水按照salary进行
+按照1-N的排名，相同salary并列且按照emp_no升序排列 (Star) */
+
+SELECT s1.emp_no, s1.salary, (COUNT(DISTINCT s2.salary) + 1) AS rank
+FROM salaries s1, salaries s2
+WHERE s1.to_date = '9999-01-01'
+AND s2.to_date = '9999-01-01'
+AND s2.salary > s1.salary
+GROUP BY 1
+ORDER BY 3, 1; -- Wrong one.
+
+SELECT s1.emp_no, s1.salary, COUNT(DISTINCT s2.salary) AS rank
+FROM salaries AS s1, salaries AS s2
+WHERE s1.to_date = '9999-01-01' 
+AND s2.to_date = '9999-01-01' 
+AND s1.salary <= s2.salary
+GROUP BY s1.emp_no
+ORDER BY s1.salary DESC, s1.emp_no ASC; -- Right one.
+
+/* 24.获取所有非manager员工当前的薪水情况，给出dept_no、emp_no以及salary，
+当前表示to_date='9999-01-01' */
+
+SELECT dept_no, d.emp_no, salary
+FROM dept_emp d, salaries s
+WHERE d.to_date = '9999-01-01'
+AND s.to_date = '9999-01-01'
+AND d.emp_no NOT IN (SELECT emp_no FROM dept_manager 
+                     WHERE to_date = '9999-01-01')
+AND d.emp_no = s.emp_no
+
+/* 25.获取员工其当前的薪水比其manager当前薪水还高的相关信息，
+emp_no，manager_no，emp_salary，manager_salary (Star) */
+
+SELECT emp_no, manager_no, e.salary AS emp_salary, m.salary AS manager_salary
+FROM (SELECT dept_no, emp_no AS manager_no, salary 
+      FROM dept_manager d1, salaries s1 
+      WHERE d1.emp_no = s1.emp_no
+      AND d1.to_date = '9999-01-01'
+      AND s1.to_date = '9999-01-01') m,
+     (SELECT dept_no, emp_no, salary 
+      FROM dept_emp d2, salaries s2
+      WHERE d2.emp_no = s2.emp_no
+      AND d2.to_date = '9999-01-01'
+      AND s2.to_date = '9999-01-01') e
+WHERE m.dept_no = e.dept_no
+AND m.salary < e.salary; -- Wrong one
+
+SELECT sem.emp_no AS emp_no, sdm.emp_no AS manager_no, 
+sem.salary AS emp_salary, sdm.salary AS manager_salary
+FROM (SELECT s.salary, s.emp_no, de.dept_no 
+  FROM salaries s INNER JOIN dept_emp de
+ON s.emp_no = de.emp_no AND s.to_date = '9999-01-01' ) AS sem, 
+(SELECT s.salary, s.emp_no, dm.dept_no 
+  FROM salaries s INNER JOIN dept_manager dm
+ON s.emp_no = dm.emp_no AND s.to_date = '9999-01-01' ) AS sdm
+WHERE sem.dept_no = sdm.dept_no AND sem.salary > sdm.salary; -- Right one
+
+/* 26.汇总各个部门当前员工的title类型的分配数目，结果给出部门编号dept_no、dept_name、
+其当前员工所有的title以及该类型title对应的数目count */
+
+SELECT d.dept_no, dept_name, title, COUNT(title) AS count
+FROM departments d, dept_emp e, titles t
+WHERE d.dept_no = e.dept_no
+AND e.emp_no = t.emp_no
+AND e.to_date = '9999-01-01'
+AND t.to_date = '9999-01-01'
+GROUP BY 1, 3
+
+/* 27.给出每个员工每年薪水涨幅超过5000的员工编号emp_no、薪水变更开始日期from_date
+以及薪水涨幅值salary_growth，并按照salary_growth逆序排列 (Star) */
+
+SELECT s2.emp_no, s2.from_date, (s2.salary - s1.salary) AS salary_growth
+FROM salaries AS s1, salaries AS s2
+WHERE s1.emp_no = s2.emp_no 
+AND salary_growth > 5000
+AND (strftime("%Y",s2.to_date) - strftime("%Y",s1.to_date) = 1 
+     OR strftime("%Y",s2.from_date) - strftime("%Y",s1.from_date) = 1 )
+ORDER BY salary_growth DESC; -- From the community
+
+/* 28.查找描述信息中包括robot的电影对应的分类名称以及电影数目，
+而且还需要该分类对应电影数量>=5部 */
+
+SELECT c.name, COUNT(fc.film_id) 
+FROM (SELECT category_id, COUNT(film_id) AS category_num 
+  FROM film_category GROUP BY 1
+  HAVING COUNT(film_id) >= 5) cc, film f, film_category fc, category c
+WHERE f.description LIKE '%robot%'
+AND f.film_id = fc.film_id
+AND c.category_id = fc.category_id
+AND c.category_id = cc.category_id
+
+/* 29.使用join查询方式找出没有分类的电影id以及名称 */
+
+SELECT f.film_id, f.title
+FROM film f LEFT JOIN film_category fc
+ON f.film_id = fc.film_id
+WHERE fc.category_id IS NULL
+
+/* 30.使用子查询的方式找出属于Action分类的所有电影对应的title, description */
+
+SELECT title, description
+FROM film
+WHERE film_id IN
+(SELECT film_id 
+ FROM film_category
+ WHERE category_id IN
+ (SELECT category_id 
+  FROM category
+  WHERE name = 'Action'))
+
+/* 31.获取select * from employees对应的执行计划 */
+
+EXPLAIN SELECT * FROM employees
+
+/* 32.将employees表的所有员工的last_name和first_name拼接起来作为Name，
+中间以一个空格区分 */
+
+
+
+
+
+
+
+
+
