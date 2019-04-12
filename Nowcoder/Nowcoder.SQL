@@ -470,7 +470,7 @@ btype和recevied，没有分配具体的员工不显示 */
 
 SELECT de.emp_no, de.dept_no, eb.btype, eb.recevied
 FROM dept_emp de LEFT JOIN emp_bonus eb 
-ON de.emp_no = eb.emp_no
+USING(emp_no)
 
 /* 57.使用含有关键字exists查找未分配具体部门的员工的所有信息 */
 
