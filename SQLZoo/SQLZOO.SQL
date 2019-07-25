@@ -136,7 +136,7 @@ WHERE subject = 'Peace' AND yr >= 2000
 
 SELECT yr, subject, winner
 FROM nobel
-WHERE (yr >=1980 AND yr <=1989) AND subject = 'Literature'
+WHERE (yr >= 1980 AND yr <= 1989) AND subject = 'Literature'
 
 /* 6. Only Presidents */
 
@@ -154,7 +154,7 @@ WHERE winner LIKE 'John%'
 
 SELECT *
 FROM nobel
-WHERE (subject = "Physics" AND yr = '1980') 
+WHERE (subject = "Physics" AND yr = 1980) 
 OR (subject = 'Chemistry' AND yr = 1984)
 
 /* 9. Exclude Chemists and Medics */
@@ -750,3 +750,4 @@ JOIN stops stopd ON (d.stop = stopd.id)
 WHERE  stopa.name = 'Craiglockhart' AND stopd.name = 'Sighthill'
             AND  stopb.name = stopc.name
 ORDER BY LENGTH(a.num), b.num, stopb.id, LENGTH(c.num), d.num
+
